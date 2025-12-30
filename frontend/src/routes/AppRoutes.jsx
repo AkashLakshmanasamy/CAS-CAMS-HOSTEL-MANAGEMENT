@@ -1,3 +1,4 @@
+import VacantRooms from "../components/admin/VacantRooms";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/login";   // ✅ FIXED (case-sensitive)
 import Signup from "../pages/auth/Signup";
@@ -7,6 +8,7 @@ import FacultyDashboard from "../pages/faculty/FacultyDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
 import { useAuth } from "../context/AuthContext";
+
 
 /* 🔹 Redirect user based on role */
 function HomeRedirect() {
@@ -35,6 +37,7 @@ function ProtectedRoute({ role, children }) {
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/test-vacant" element={<VacantRooms />} />
       {/* 🔹 Default route */}
       <Route path="/" element={<HomeRedirect />} />
 
