@@ -14,6 +14,9 @@ frontend/
 │   │   │
 │   │   └── ui/
 │   │       └── Button.jsx
+│   │   └── HostelSelector.jsx
+│   │   └── RoomSelector.jsx
+│   │   └── RoomGrid.jsx
 │
 │   ├── context/
 │   │   └── AuthContext.jsx
