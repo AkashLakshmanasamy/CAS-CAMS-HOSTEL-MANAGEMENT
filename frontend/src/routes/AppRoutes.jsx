@@ -1,4 +1,4 @@
-import VacantRooms from "../components/admin/VacantRooms";
+import VacantRooms from "../pages/admin/VacantRooms";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/login";   // ✅ FIXED (case-sensitive)
 import Signup from "../pages/auth/Signup";
