@@ -6,6 +6,7 @@ import Signup from "../pages/auth/Signup";
 import StudentDashboard from "../pages/student/StudentDashboard";
 import FacultyDashboard from "../pages/faculty/FacultyDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import Feedback from "../pages/student/Feedback";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -38,8 +39,13 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/test-vacant" element={<VacantRooms />} />
-      {/* 🔹 Default route */}
+      {/* 🔹 Default route -admin faculty page*/} 
       <Route path="/" element={<HomeRedirect />} />
+
+      <Route path="/Feedback" element={< Feedback />} />
+      {/* 🔹 Default route -admin faculty page*/} 
+      <Route path="/" element={<HomeRedirect />} />
+
 
       {/* 🔹 Public routes */}
       <Route path="/login" element={<Login />} />
