@@ -4,6 +4,10 @@ import FloorSelector from "../../components/FloorSelector";
 import RoomGrid from "../../components/RoomGrid";
 import "../../styles/RoomAllocation.css";
 import { supabase } from "../../utils/supabase";
+import { useAuth } from "../../context/AuthContext";
+
+
+
 
 /* ---------- Icons ---------- */
 const Icon = ({ path, className = "" }) => (
@@ -36,6 +40,8 @@ const genRooms = (floor) => {
 
 /* ---------- Component ---------- */
 export default function StudentRoomAllocation() {
+  const { user, loading } = useAuth();
+
   const [form, setForm] = useState({
     email: "",
     name: "",
@@ -60,24 +66,35 @@ export default function StudentRoomAllocation() {
 
   /* ✅ CHECK IF STUDENT ALREADY APPLIED */
   useEffect(() => {
-    if (!form.email) return;
-
+    if (loading) return;
+    if (!user?.email) return;
+  
     const checkAllocation = async () => {
       setLoadingStatus(true);
-
-      const { data } = await supabase
+  
+      const { data, error } = await supabase
         .from("allocations")
         .select("*")
-        .eq("email", form.email)
+        .eq("email", user.email)
         .maybeSingle();
-
-      if (data) setExistingAllocation(data);
-
+  
+      if (data) {
+        setExistingAllocation(data);
+      }
+  
       setLoadingStatus(false);
     };
-
+  
     checkAllocation();
-  }, [form.email]);
+  }, [user, loading]);
+
+  useEffect(() => {
+    if (user?.email) {
+      setForm((prev) => ({ ...prev, email: user.email }));
+    }
+  }, [user]);
+  
+  
 
   /* ---------- Handlers ---------- */
   const onChange = (e) => {
@@ -186,7 +203,13 @@ export default function StudentRoomAllocation() {
           <div className="form-grid">
             <div className="form-group">
               <label>Email</label>
-              <input name="email" value={form.email} onChange={onChange} />
+              <input
+                 name="email"
+                 value={form.email}
+                 readOnly
+                 className="input-readonly"
+              />
+
             </div>
 
             <div className="form-group">

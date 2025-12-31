@@ -8,6 +8,15 @@ export function AuthProvider({ children }) {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Helper function to set role
+  const assignRole = (user) => {
+    if (user.email === "admin@gmail.com") {
+      setRole("admin");
+    } else {
+      setRole("student");
+    }
+  };
+
   useEffect(() => {
     // 🔹 Initial session load
     const initAuth = async () => {
@@ -16,9 +25,7 @@ export function AuthProvider({ children }) {
 
         if (data?.session?.user) {
           setUser(data.session.user);
-
-          // ✅ TEMP DEFAULT ROLE
-          setRole("student");
+          assignRole(data.session.user); // ✅ FIX
         }
       } catch (err) {
         console.error("Auth init error:", err);
@@ -34,9 +41,7 @@ export function AuthProvider({ children }) {
       (_event, session) => {
         if (session?.user) {
           setUser(session.user);
-
-          // ✅ TEMP DEFAULT ROLE
-          setRole("student");
+          assignRole(session.user); // ✅ FIX
         } else {
           setUser(null);
           setRole(null);
@@ -53,7 +58,7 @@ export function AuthProvider({ children }) {
         user,
         role,
         loading,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
       }}
     >
       {children}

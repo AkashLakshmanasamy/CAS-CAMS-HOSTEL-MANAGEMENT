@@ -247,7 +247,11 @@ input:focus, select:focus {
 }
 
 .status-pending { background: #FEF3C7; color: #B45309; }
-.status-approved { background: #D1FAE5; color: #065F46; }
+.status-confirmed {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
 .status-rejected { background: #FEE2E2; color: #991B1B; }
 
 .rejection-box {

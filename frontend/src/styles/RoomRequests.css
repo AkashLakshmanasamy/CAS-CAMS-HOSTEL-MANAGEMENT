@@ -1,0 +1,115 @@
+.room-requests {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  }
+  
+  /* Header */
+  .room-requests-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .room-requests-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .room-requests-header select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+  }
+  
+  /* Table */
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .requests-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .requests-table th {
+    padding: 14px;
+    text-align: left;
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 600;
+  }
+  
+  .requests-table td {
+    padding: 14px;
+    border-top: 1px solid #f1f1f1;
+  }
+  
+  .room-pill {
+    background: #eef2ff;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  
+  .bed-pill {
+    background: #f3f4f6;
+    padding: 4px 12px;
+    border-radius: 8px;
+  }
+  
+  /* Status */
+  .status-badge {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-badge.confirmed {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-badge.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  
+  /* Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .btn {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  .btn.confirm {
+    background: #6ee7b7;
+    color: #065f46;
+  }
+  
+  .btn.reject {
+    background: #fca5a5;
+    color: #7f1d1d;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #9ca3af;
+  }
+  
