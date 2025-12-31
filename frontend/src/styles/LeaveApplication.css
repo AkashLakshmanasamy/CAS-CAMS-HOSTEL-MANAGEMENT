@@ -1,0 +1,345 @@
+/* src/styles/LeaveApplication-new.css */
+
+/* ---------- 
+   1. ROOT & VARIABLES 
+   ---------- */
+   :root {
+    --sidebar-bg: #111827; 
+    
+    /* ✅ NAVY BLUE GRADIENT (Same as Feedback/Room) */
+    --primary-gradient: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+  
+    --accent-color: #2c5282; /* For borders/icons */
+    --success-color: #10B981; 
+    --danger-color: #EF4444; 
+  
+    --content-bg: #F9FAFB; 
+    --content-card-bg: #FFFFFF; 
+    --content-border: #E5E7EB; 
+  
+    --text-primary: #1F2937; 
+    --text-secondary: #030304; 
+    --text-light: #6B7280; 
+  
+    --radius-md: 0.375rem; 
+    --radius-xl: 0.75rem; 
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* ---------- 
+     2. PAGE LAYOUT 
+     ---------- */
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--content-bg);
+    color: var(--text-secondary);
+  }
+  
+  .leave-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  
+  .leave-card {
+    width: 100%;
+    max-width: 900px; /* Slightly wider for form data */
+    background: var(--content-card-bg);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    border: 1px solid var(--content-border);
+  }
+  
+  /* ---------- 
+     3. HEADER 
+     ---------- */
+  .leave-header {
+    background: var(--primary-gradient);
+    color: #FFFFFF;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .leave-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+  
+  .leave-header p {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.9;
+    color: #E2E8F0;
+  }
+  
+  /* ---------- 
+     4. FORM STYLES 
+     ---------- */
+  .leave-form {
+    padding: 2.5rem;
+  }
+  
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .section-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns */
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .full-width {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  
+  .form-divider {
+    border-top: 1px solid var(--content-border);
+    margin: 2rem 0;
+  }
+  
+  label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+  }
+  
+  /* Inputs */
+  input, select, textarea {
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--content-border);
+    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #FFFFFF;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.15);
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  /* Radio Buttons Customization */
+  .radio-group {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--content-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .radio-option.selected {
+    background-color: #EBF8FF;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    font-weight: 600;
+  }
+  
+  /* File Upload Styling */
+  .hidden-file-input {
+    display: none;
+  }
+  
+  .file-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    margin-top: 0.25rem;
+  }
+  
+  .file-upload-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--content-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--content-border);
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+  
+  .file-upload-button .icon {
+    width: 1rem; height: 1rem;
+  }
+  
+  .file-upload-label:hover .file-upload-button {
+    background-color: var(--content-border);
+  }
+  
+  .file-name-display {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-style: italic;
+  }
+  
+  /* Note Box */
+  .form-note {
+    margin: 2rem 0 1.5rem;
+    padding: 1rem;
+    background-color: #FFFBEB; /* Amber 50 */
+    border-left: 4px solid #F59E0B; /* Amber */
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+  }
+  
+  .form-note p {
+    margin: 0;
+    color: #92400E;
+  }
+  
+  /* ---------- 
+     5. SUBMIT BUTTON 
+     ---------- */
+  .submit-btn {
+    display: flex;
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    
+    /* Gradient Background */
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: var(--primary-gradient-hover);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .submit-btn:disabled {
+    background: var(--content-border);
+    color: var(--text-light);
+    cursor: not-allowed;
+  }
+  
+  .submit-btn .icon {
+    width: 1.2rem; height: 1.2rem;
+  }
+  
+  /* Loading Spinner */
+  .spinner {
+    width: 1.25rem; height: 1.25rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  /* ---------- 
+     6. SUCCESS STATE 
+     ---------- */
+  .success-card {
+    text-align: center;
+    padding: 4rem 2rem;
+    max-width: 600px;
+  }
+  
+  .success-icon-wrapper {
+    width: 80px; height: 80px;
+    background-color: #ECFDF5; 
+    color: var(--success-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    border: 1px solid #D1FAE5;
+  }
+  
+  .success-icon-wrapper .icon {
+    width: 48px; height: 48px;
+  }
+  
+  .success-card h2 {
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .success-card p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .success-note {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 2.5rem;
+    padding: 0.75rem;
+    background-color: var(--content-bg);
+    border-radius: var(--radius-md);
+    display: inline-block;
+  }
+  
+  /* ---------- 
+     7. ANIMATIONS & RESPONSIVE 
+     ---------- */
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  
+  @media (max-width: 768px) {
+    .leave-page { padding: 1rem; }
+    .leave-form { padding: 1.5rem; }
+    .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+    
+    /* Make date/time sit side-by-side even on mobile if space permits */
+    .form-grid input[type="date"], .form-grid input[type="time"] {
+        min-width: 100%;
+    }
+  }
