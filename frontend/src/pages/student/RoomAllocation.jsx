@@ -1,13 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import HostelSelector from "../../components/HostelSelector";
 import FloorSelector from "../../components/FloorSelector";
 import RoomGrid from "../../components/RoomGrid";
 import "../../styles/RoomAllocation.css";
 import { supabase } from "../../utils/supabase";
 import { useAuth } from "../../context/AuthContext";
-
-
-
 
 /* ---------- Icons ---------- */
 const Icon = ({ path, className = "" }) => (
@@ -58,13 +55,55 @@ export default function StudentRoomAllocation() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  /* ✅ NEW STATES */
+  /* ✅ EXISTING STATUS STATES */
   const [existingAllocation, setExistingAllocation] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
 
+  /* ✅ NEW STATE: Store occupied beds */
+  const [occupiedBeds, setOccupiedBeds] = useState([]);
+
   const rooms = useMemo(() => genRooms(form.floor), [form.floor]);
 
-  /* ✅ CHECK IF STUDENT ALREADY APPLIED */
+  /* ✅ 1. FETCH OCCUPIED BEDS (Logic Added) */
+  useEffect(() => {
+    const fetchOccupiedRooms = async () => {
+      // Fetch room_number and bed_number where status is NOT rejected
+      const { data, error } = await supabase
+        .from("allocations")
+        .select("room_number, bed_number")
+        .eq("hostel", form.hostel)
+        .eq("floor", form.floor)
+        .neq("status", "rejected");
+
+      if (!error && data) {
+        setOccupiedBeds(data);
+      }
+    };
+
+    fetchOccupiedRooms();
+  }, [form.hostel, form.floor]);
+
+  /* ✅ 2. HELPER: Determine Bed Colors (Logic Added) */
+  const getBedStatus = useCallback((roomNo) => {
+    const status = [false, false, false, false];
+    
+    // Find allocations for this specific room
+    const allocationsInRoom = occupiedBeds.filter(
+      (alloc) => alloc.room_number === roomNo
+    );
+
+    // Mark occupied beds as true
+    allocationsInRoom.forEach((alloc) => {
+      const bedIndex = alloc.bed_number - 1; 
+      if (bedIndex >= 0 && bedIndex < 4) {
+        status[bedIndex] = true; 
+      }
+    });
+
+    return status;
+  }, [occupiedBeds]);
+
+  /* ---------- Check Existing Allocation ---------- */
   useEffect(() => {
     if (loading) return;
     if (!user?.email) return;
@@ -93,8 +132,6 @@ export default function StudentRoomAllocation() {
       setForm((prev) => ({ ...prev, email: user.email }));
     }
   }, [user]);
-  
-  
 
   /* ---------- Handlers ---------- */
   const onChange = (e) => {
@@ -127,6 +164,17 @@ export default function StudentRoomAllocation() {
 
     try {
       const { roomNo, bedIndex } = selected;
+
+      /* ✅ Logic: Double Check availability before inserting */
+      const bedIsTaken = occupiedBeds.some(
+        (alloc) => alloc.room_number === roomNo && alloc.bed_number === (bedIndex + 1)
+      );
+
+      if (bedIsTaken) {
+        alert("This bed has already been filled. Please select another.");
+        setIsSubmitting(false);
+        return;
+      }
 
       const { error } = await supabase.from("allocations").insert({
         email: form.email,
@@ -184,6 +232,7 @@ export default function StudentRoomAllocation() {
       </div>
     );
   }
+
   /* ---------- UI ---------- */
   return (
     <div className="allocation-page">
@@ -209,7 +258,6 @@ export default function StudentRoomAllocation() {
                  readOnly
                  className="input-readonly"
               />
-
             </div>
 
             <div className="form-group">
@@ -269,7 +317,10 @@ export default function StudentRoomAllocation() {
               <label>Select Hostel</label>
               <HostelSelector
                 value={form.hostel}
-                onChange={(v) => setForm({ ...form, hostel: v })}
+                onChange={(v) => {
+                    setForm({ ...form, hostel: v });
+                    setSelected(null);
+                }}
               />
             </div>
 
@@ -277,7 +328,10 @@ export default function StudentRoomAllocation() {
               <label>Select Floor</label>
               <FloorSelector
                 value={form.floor}
-                onChange={(v) => setForm({ ...form, floor: v })}
+                onChange={(v) => {
+                    setForm({ ...form, floor: v });
+                    setSelected(null);
+                }}
               />
             </div>
           </div>
@@ -316,7 +370,7 @@ export default function StudentRoomAllocation() {
               hostel={form.hostel}
               floor={form.floor}
               rooms={rooms}
-              getBeds={() => [false, false, false, false]}
+              getBeds={getBedStatus} /* ✅ CHANGED: Uses logic instead of false */
               selected={selected}
               onSelectFreeBed={(roomNo, bedIndex) =>
                 setSelected({ roomNo, bedIndex })
