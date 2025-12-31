@@ -5,20 +5,25 @@ import { Routes, Route, Navigate } from "react-router-dom";
 // Auth & Layouts
 import Login from "../pages/auth/login";
 import Signup from "../pages/auth/Signup";
-import StudentLayout from "../pages/student/StudentLayout"; // ✅ Navbar Layout
+import StudentLayout from "../pages/student/StudentLayout"; 
 import { useAuth } from "../context/AuthContext";
 
 // Student Pages
 import StudentDashboard from "../pages/student/StudentDashboard";
-import RoomAllocation from "../pages/student/RoomAllocation"; // ✅ Added
+import RoomAllocation from "../pages/student/RoomAllocation";
 import LeaveApplication from "../pages/student/LeaveApplication";
 import Feedback from "../pages/student/Feedback";
 import StudentProfile from "../pages/student/StudentProfile";
+import Schedule from "../pages/student/Schedule"; 
+import Rules from "../pages/student/Rules";
 
 // Faculty & Admin Pages
 import FacultyDashboard from "../pages/faculty/FacultyDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import VacantRooms from "../pages/admin/VacantRooms";
+import AdminMenuUpdate from "../pages/admin/AdminMenuUpdate"; 
+import AdminRulesUpdate from "../pages/admin/AdminRulesUpdate"; 
+import AdminAnnouncements from "../pages/admin/AdminAnnouncements"; // ✅ NEW: Import Admin Announcements
 
 /* 🔹 Redirect user based on role */
 function HomeRedirect() {
@@ -52,7 +57,7 @@ export default function AppRoutes() {
       <Route
         element={
           <ProtectedRoute role="student">
-            <StudentLayout /> {/* ✅ This adds Navbar to all routes below */}
+            <StudentLayout />
           </ProtectedRoute>
         }
       >
@@ -64,6 +69,8 @@ export default function AppRoutes() {
         <Route path="/StudentProfile" element={<StudentProfile />} />
         <Route path="/Feedback" element={<Feedback />} />
         <Route path="/LeaveAppliction" element={<LeaveApplication />} />
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/rules" element={<Rules />} />
       </Route>
 
       {/* 🔹 FACULTY ROUTES */}
@@ -85,6 +92,36 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      
+      {/* Admin Feature Routes */}
+      <Route
+        path="/admin/update-menu"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminMenuUpdate />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/admin/update-rules"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminRulesUpdate />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ✅ NEW: Admin Announcements Page */}
+      <Route
+        path="/admin/announcements"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminAnnouncements />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="/test-vacant" element={<VacantRooms />} />
 
       {/* 🔹 Fallback for unknown routes */}

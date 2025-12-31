@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import "../../styles/AdminDashboard.css";
 import RoomRequests from "./RoomRequests";
 import VacantRooms from "./VacantRooms";
+import AdminMenuUpdate from "./AdminMenuUpdate";
+import AdminRulesUpdate from "./AdminRulesUpdate";
+import AdminAnnouncements from "./AdminAnnouncements";
 /* ---------- Icon Helper ---------- */
 const Icon = ({ path }) => (
   <svg
@@ -49,6 +52,15 @@ export default function AdminDashboard() {
   
       case "leaveApplications":
         return <h2>Leave Applications</h2>;
+
+      case "AdminMenuUpdate":
+        return <AdminMenuUpdate/>
+      
+      case "AdminRulesUpdate":
+        return <AdminRulesUpdate/>
+
+      case "AdminAnnouncements":
+        return <AdminAnnouncements/>
   
 
   
@@ -75,7 +87,7 @@ export default function AdminDashboard() {
       {/* ---------- SIDEBAR ---------- */}
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
-          <h2>Hostel Admin</h2>
+          <h2>Cube Hostels</h2>
         </div>
 
         <nav className="admin-sidebar-nav">
@@ -103,6 +115,21 @@ export default function AdminDashboard() {
             tab="vacantRooms"
             icon={ICONS.vacantRooms}
             label="Vacant Rooms"
+          />
+          <NavLink
+            tab="AdminAnnouncements"
+            icon={ICONS.vacantRooms}
+            label="Announcements"
+          />
+          <NavLink
+            tab="AdminMenuUpdate"
+            icon={ICONS.vacantRooms}
+            label="Food Menu"
+          />
+          <NavLink
+            tab="AdminRulesUpdate"
+            icon={ICONS.vacantRooms}
+            label="Hostel Rules"
           />
         </nav>
       </aside>

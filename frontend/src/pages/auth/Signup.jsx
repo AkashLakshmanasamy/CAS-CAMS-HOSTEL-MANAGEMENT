@@ -1,6 +1,8 @@
+// src/pages/auth/Signup.jsx
 import { useState } from "react";
 import { supabase } from "../../utils/supabase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import "../../styles/Auth.css"; // Reuse the same CSS
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -29,17 +31,19 @@ export default function Signup() {
     }
 
     // 2. Insert role into profiles table
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .insert({
-        id: data.user.id,
-        role
-      });
+    if (data?.user) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: data.user.id,
+          role
+        });
 
-    if (profileError) {
-      setError(profileError.message);
-      setLoading(false);
-      return;
+      if (profileError) {
+        setError(profileError.message);
+        setLoading(false);
+        return;
+      }
     }
 
     alert("Signup successful! Please login.");
@@ -48,85 +52,58 @@ export default function Signup() {
   };
 
   return (
-    <div style={styles.container}>
-      <form onSubmit={handleSignup} style={styles.card}>
+    <div className="auth-container">
+      <div className="auth-card">
         <h2>Create Account</h2>
+        <p className="auth-subtitle">Join the hostel management system</p>
 
-        {error && <p style={styles.error}>{error}</p>}
+        {error && <div className="auth-error">{error}</div>}
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={styles.input}
-        />
+        <form onSubmit={handleSignup}>
+          <div className="form-group">
+            <input
+              type="email"
+              className="auth-input"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={styles.input}
-        />
+          <div className="form-group">
+            <input
+              type="password"
+              className="auth-input"
+              placeholder="Create Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          style={styles.input}
-        >
-          <option value="student">Student</option>
-          <option value="faculty">Faculty</option>
-          <option value="admin">Admin</option>
-        </select>
+          <div className="form-group">
+            <select
+              className="auth-input"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="student">Student</option>
+              <option value="faculty">Faculty</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
 
-        <button type="submit" disabled={loading} style={styles.button}>
-          {loading ? "Creating..." : "Sign Up"}
-        </button>
+          <button type="submit" disabled={loading} className="auth-btn btn-success">
+            {loading ? "Creating Account..." : "Sign Up"}
+          </button>
+        </form>
 
-        <p style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
-          Already have an account? <a href="/login">Login</a>
-        </p>
-      </form>
+        <div className="auth-footer">
+          Already have an account? 
+          <Link to="/login" className="auth-link">Login here</Link>
+        </div>
+      </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f3f4f6"
-  },
-  card: {
-    background: "#fff",
-    padding: "2rem",
-    borderRadius: "8px",
-    width: "340px",
-    boxShadow: "0 10px 20px rgba(0,0,0,0.1)"
-  },
-  input: {
-    width: "100%",
-    padding: "0.75rem",
-    marginBottom: "1rem",
-    borderRadius: "4px",
-    border: "1px solid #ccc"
-  },
-  button: {
-    width: "100%",
-    padding: "0.75rem",
-    background: "#16a34a",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer"
-  },
-  error: {
-    color: "red",
-    marginBottom: "1rem"
-  }
-};

@@ -1,5 +1,5 @@
 import React from "react";
-const HOSTELS = ["Dheeran","Valluvar","Ponnar","Sankar","Elango","Kamban","Bharathi"];
+const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4", "Hostel 5", "Hostel 6", "Hostel 7"];
 
 export default function HostelSelector({ value, onChange }) {
   return (

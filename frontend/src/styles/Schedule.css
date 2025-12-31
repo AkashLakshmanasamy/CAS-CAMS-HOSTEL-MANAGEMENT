@@ -1,0 +1,322 @@
+
+/* ---------- 
+   1. ROOT & VARIABLES 
+   ---------- */
+:root {
+  --sidebar-bg: #111827; 
+  
+  /* ✅ NAVY BLUE GRADIENT (Consistent Theme) */
+  --primary-gradient: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+
+  --accent-color: #2c5282; 
+  --accent-light: #EBF8FF;
+
+  --content-bg: #F9FAFB; 
+  --content-card-bg: #FFFFFF; 
+  --content-border: #E5E7EB; 
+
+  --text-primary: #1F2937; 
+  --text-secondary: #4B5563; 
+  --text-light: #6B7280; 
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --radius-md: 0.375rem; 
+  --radius-lg: 0.5rem; 
+  --radius-xl: 0.75rem; 
+}
+
+/* ---------- 
+   2. PAGE LAYOUT 
+   ---------- */
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--content-bg);
+  color: var(--text-secondary);
+}
+
+.schedule-page {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.schedule-card {
+  width: 100%;
+  max-width: 1000px;
+  background: var(--content-card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid var(--content-border);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 
+   3. HEADER 
+   ---------- */
+.schedule-header {
+  background: var(--primary-gradient);
+  color: #FFFFFF;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.schedule-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.schedule-header p {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+  color: #E2E8F0;
+}
+
+/* ---------- 
+   4. DAYS SELECTOR 
+   ---------- */
+.days-selector {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background-color: #F8FAFC;
+  border-bottom: 1px solid var(--content-border);
+  overflow-x: auto; /* Allow scrolling on mobile */
+}
+
+.day-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--content-border);
+  color: var(--text-secondary);
+  padding: 0.75rem 1.25rem;
+  border-radius: 50px; /* Pill shape */
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.day-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.day-btn.active {
+  background: var(--primary-gradient);
+  color: white;
+  border-color: transparent;
+  box-shadow: var(--shadow-md);
+}
+
+.full-day-name {
+  display: inline;
+}
+
+/* ---------- 
+   5. MENU CONTENT 
+   ---------- */
+.menu-content {
+  padding: 2rem;
+  background-color: #FFFFFF;
+}
+
+.day-heading {
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  margin-bottom: 2rem;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.day-heading::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 3px;
+  background: var(--accent-color);
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+}
+
+.timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.meal-card {
+  background: #FFFFFF;
+  border: 1px solid var(--content-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.meal-card:hover {
+  box-shadow: var(--shadow-md);
+  border-left-color: var(--accent-color);
+}
+
+.meal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 0.75rem;
+}
+
+.meal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.meal-icon {
+  font-size: 1.25rem;
+}
+
+.meal-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-light);
+  background-color: #F1F5F9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+}
+
+.meal-description {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.meal-items-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.food-tag {
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ---------- 
+   6. WEEKLY OVERVIEW 
+   ---------- */
+.weekly-overview {
+  background-color: #F8FAFC;
+  padding: 2rem;
+  border-top: 1px solid var(--content-border);
+}
+
+.overview-title {
+  text-align: center;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.day-card-mini {
+  background: white;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--content-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-card-mini:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--accent-color);
+}
+
+.day-card-mini.highlight {
+  border-color: var(--accent-color);
+  background-color: var(--accent-light);
+}
+
+.day-card-mini h4 {
+  margin: 0 0 0.75rem 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.mini-menu-item {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 
+   7. RESPONSIVE 
+   ---------- */
+@media (max-width: 768px) {
+  .schedule-page {
+    padding: 1rem;
+  }
+  
+  .schedule-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .full-day-name {
+    display: none; /* Hide full day names on mobile */
+  }
+  
+  .day-btn {
+    padding: 0.6rem 1rem;
+  }
+  
+  .menu-content {
+    padding: 1.5rem;
+  }
+  
+  .meal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .meal-time {
+    align-self: flex-start;
+  }
+}

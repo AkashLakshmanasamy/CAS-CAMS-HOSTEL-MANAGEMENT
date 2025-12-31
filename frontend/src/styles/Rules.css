@@ -1,0 +1,320 @@
+
+/* ---------- 
+   1. ROOT & VARIABLES 
+   ---------- */
+:root {
+  --sidebar-bg: #111827; 
+  
+  /* ✅ NAVY BLUE GRADIENT (Consistent Theme) */
+  --primary-gradient: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+
+  --accent-color: #2c5282; 
+  --accent-light: #EBF8FF;
+  --accent-bg: #F8FAFC;
+
+  --content-bg: #F9FAFB; 
+  --content-card-bg: #FFFFFF; 
+  --content-border: #E5E7EB; 
+
+  --text-primary: #1F2937; 
+  --text-secondary: #4B5563; 
+  --text-light: #6B7280; 
+
+  --warning-bg: #FFFBEB;
+  --warning-text: #B45309;
+  --danger-bg: #FEF2F2;
+  --danger-text: #B91C1C;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  --radius-md: 0.375rem; 
+  --radius-lg: 0.5rem; 
+  --radius-xl: 0.75rem; 
+}
+
+/* ---------- 
+   2. PAGE LAYOUT 
+   ---------- */
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--content-bg);
+  color: var(--text-secondary);
+}
+
+.rules-page {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.rules-card {
+  width: 100%;
+  max-width: 1000px;
+  background: var(--content-card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid var(--content-border);
+}
+
+/* ---------- 
+   3. HEADER 
+   ---------- */
+.rules-header {
+  background: var(--primary-gradient);
+  color: #FFFFFF;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.rules-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.rules-header p {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+  color: #E2E8F0;
+}
+
+/* ---------- 
+   4. BODY CONTENT 
+   ---------- */
+.rules-body {
+  padding: 2rem;
+}
+
+.rules-section {
+  margin-bottom: 2.5rem;
+}
+
+.rules-section.no-border {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #E2E8F0;
+}
+
+.section-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* ---------- 
+   5. GENERAL RULES LIST 
+   ---------- */
+.rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rule-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.rule-number {
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.rule-text {
+  font-size: 1rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* ---------- 
+   6. TIMING TABLES 
+   ---------- */
+.grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.timing-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: var(--accent-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--content-border);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.time-badge {
+  font-weight: 700;
+  color: var(--accent-color);
+  font-size: 0.95rem;
+}
+
+.note-box {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #F1F8E9; /* Light Green for general notes */
+  color: #33691E;
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  border-left: 4px solid #7CB342;
+}
+
+/* ---------- 
+   7. PROHIBITED ITEMS 
+   ---------- */
+.prohibited-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.prohibited-card {
+  background-color: var(--content-card-bg);
+  border: 1px solid var(--content-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.prohibited-card h4 {
+  margin: 0 0 0.75rem 0;
+  color: var(--danger-text);
+  font-size: 1.1rem;
+  border-bottom: 1px solid #FECACA;
+  padding-bottom: 0.5rem;
+}
+
+.prohibited-card ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.prohibited-card li {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ---------- 
+   8. CONSEQUENCES 
+   ---------- */
+.consequences-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.consequence-item {
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border-left: 4px solid transparent;
+}
+
+.consequence-item h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.consequence-item p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Severity Levels */
+.consequence-item.level-1 {
+  background-color: #FFFBEB; /* Yellow */
+  border-left-color: #F59E0B;
+}
+.consequence-item.level-1 h4 { color: #B45309; }
+.consequence-item.level-1 p { color: #92400E; }
+
+.consequence-item.level-2 {
+  background-color: #FFEDD5; /* Orange */
+  border-left-color: #F97316;
+}
+.consequence-item.level-2 h4 { color: #C2410C; }
+.consequence-item.level-2 p { color: #9A3412; }
+
+.consequence-item.level-3 {
+  background-color: #FEF2F2; /* Red */
+  border-left-color: #EF4444;
+}
+.consequence-item.level-3 h4 { color: #B91C1C; }
+.consequence-item.level-3 p { color: #991B1B; }
+
+.consequence-item.level-4 {
+  background-color: #1F2937; /* Dark/Black */
+  border-left-color: #000000;
+}
+.consequence-item.level-4 h4 { color: #F3F4F6; }
+.consequence-item.level-4 p { color: #D1D5DB; }
+
+/* ---------- 
+   9. RESPONSIVE 
+   ---------- */
+@media (max-width: 768px) {
+  .rules-page {
+    padding: 1rem;
+  }
+  
+  .rules-body {
+    padding: 1.5rem;
+  }
+  
+  .rules-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .grid-2-col {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .timing-row {
+    font-size: 0.9rem;
+  }
+  
+  .consequences-grid {
+    grid-template-columns: 1fr;
+  }
+}

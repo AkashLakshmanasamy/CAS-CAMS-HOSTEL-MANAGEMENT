@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../utils/supabase";
-import { useAuth } from "../../context/AuthContext"; // ✅ Fixed import
+import { useAuth } from "../../context/AuthContext"; 
 import "../../styles/StudentDashboard.css"; 
 
 // --- Icons (SVG Paths) ---
@@ -24,32 +24,47 @@ const ICONS = {
 };
 
 export default function StudentDashboard() {
-  const { user } = useAuth(); // ✅ Using your AuthContext
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [studentName, setStudentName] = useState("");
-  // eslint-disable-next-line no-unused-vars
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfileName = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+      
+      // 1. Fetch Profile Name
       if (user) {
-        const { data } = await supabase
+        const { data: profile } = await supabase
           .from("profiles")
           .select("full_name")
           .eq("id", user.id)
           .single();
-
-        if (data?.full_name) {
-          setStudentName(data.full_name);
-        }
+        if (profile?.full_name) setStudentName(profile.full_name);
       }
+
+      // 2. Fetch Announcements
+      const { data: notices } = await supabase
+        .from("announcements")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5); // Show top 5 latest
+      
+      if (notices) setAnnouncements(notices);
+      
       setLoading(false);
     };
 
-    fetchProfileName();
+    fetchData();
   }, [user]);
 
-  // Fallback name logic
+  // Helper to format date (e.g. "27 DEC")
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", { day: "numeric", month: "short" }).toUpperCase();
+  };
+
   const displayName = studentName || user?.email?.split("@")[0] || "Student";
 
   return (
@@ -65,55 +80,56 @@ export default function StudentDashboard() {
       {/* 2. Quick Status Cards */}
       <div className="status-grid">
         
-        {/* Card 1: Room Allocation (Linked to real route) */}
+        {/* Card 1: Room Allocation */}
         <div className="status-card highlight-card" onClick={() => navigate("/room-allocation")}>
           <div className="card-icon-bg"><Icon path={ICONS.bed} /></div>
           <div className="card-info">
             <h3>Room Allocation</h3>
-            <p>Phase 1 is Live</p>
+            <p>Check Status</p>
             <span className="action-link">Book Now <Icon path={ICONS.arrow} /></span>
           </div>
         </div>
 
-        {/* Card 2: Menu (Placeholder) */}
+        {/* Card 2: Menu */}
         <div className="status-card" onClick={() => navigate("/schedule")}>
           <div className="card-icon-bg secondary"><Icon path={ICONS.food} /></div>
           <div className="card-info">
             <h3>Today's Menu</h3>
-            <p>Lunch: Veg Biryani</p>
+            <p>View Weekly Plan</p>
             <span className="action-link">View Week <Icon path={ICONS.arrow} /></span>
           </div>
         </div>
 
-        {/* Card 3: Notices (Placeholder) */}
+        {/* Card 3: Notices */}
         <div className="status-card" onClick={() => navigate("/rules")}>
           <div className="card-icon-bg warning"><Icon path={ICONS.alert} /></div>
           <div className="card-info">
             <h3>Notices</h3>
-            <p>Curfew: 8:30 PM</p>
+            <p>Hostel Rules</p>
             <span className="action-link">Read Rules <Icon path={ICONS.arrow} /></span>
           </div>
         </div>
       </div>
 
-      {/* 3. Notice Board Section (Simulated Data) */}
+      {/* 3. Notice Board Section (Dynamic Data) */}
       <div className="dashboard-section">
         <h2>📢 Latest Announcements</h2>
         <div className="notice-list">
-          <div className="notice-item">
-            <div className="notice-date">27 DEC</div>
-            <div className="notice-text">
-              <strong>Hostel Fees Due</strong>
-              <p>Last date for payment is extended to 5th Jan.</p>
-            </div>
-          </div>
-          <div className="notice-item">
-            <div className="notice-date">26 DEC</div>
-            <div className="notice-text">
-              <strong>Wi-Fi Maintenance</strong>
-              <p>Server downtime expected between 2 PM - 4 PM today.</p>
-            </div>
-          </div>
+          {loading ? (
+             <p style={{ color: '#718096' }}>Loading notices...</p>
+          ) : announcements.length === 0 ? (
+             <p style={{ color: '#718096' }}>No new announcements.</p>
+          ) : (
+            announcements.map((notice) => (
+              <div key={notice.id} className="notice-item">
+                <div className="notice-date">{formatDate(notice.created_at)}</div>
+                <div className="notice-text">
+                  <strong>{notice.title}</strong>
+                  <p>{notice.content}</p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
