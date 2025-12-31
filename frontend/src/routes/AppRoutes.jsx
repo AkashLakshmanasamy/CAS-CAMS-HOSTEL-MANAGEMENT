@@ -8,6 +8,7 @@ import FacultyDashboard from "../pages/faculty/FacultyDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import LeaveApplication from "../pages/student/LeaveApplication"
 import Feedback from "../pages/student/Feedback";
+import StudentProfile from "../pages/student/StudentProfile";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -48,6 +49,7 @@ export default function AppRoutes() {
       <Route path="/Feedback" element={< Feedback />} />
       {/* 🔹 Default route -admin faculty page*/} 
       <Route path="/" element={<HomeRedirect />} />
+      <Route path="/StudentProfile" element={<StudentProfile />} />
 
 
       {/* 🔹 Public routes */}
