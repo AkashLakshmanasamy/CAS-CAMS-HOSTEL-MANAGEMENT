@@ -1,74 +1,72 @@
-import VacantRooms from "../pages/admin/VacantRooms";
+// src/routes/AppRoutes.jsx
+import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "../pages/auth/login";   // ✅ FIXED (case-sensitive)
-import Signup from "../pages/auth/Signup";
 
+// Auth & Layouts
+import Login from "../pages/auth/login";
+import Signup from "../pages/auth/Signup";
+import StudentLayout from "../pages/student/StudentLayout"; // ✅ Navbar Layout
+import { useAuth } from "../context/AuthContext";
+
+// Student Pages
 import StudentDashboard from "../pages/student/StudentDashboard";
-import FacultyDashboard from "../pages/faculty/FacultyDashboard";
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import LeaveApplication from "../pages/student/LeaveApplication"
+import RoomAllocation from "../pages/student/RoomAllocation"; // ✅ Added
+import LeaveApplication from "../pages/student/LeaveApplication";
 import Feedback from "../pages/student/Feedback";
 import StudentProfile from "../pages/student/StudentProfile";
 
-import { useAuth } from "../context/AuthContext";
-
+// Faculty & Admin Pages
+import FacultyDashboard from "../pages/faculty/FacultyDashboard";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import VacantRooms from "../pages/admin/VacantRooms";
 
 /* 🔹 Redirect user based on role */
 function HomeRedirect() {
   const { role, loading } = useAuth();
-
-  if (loading) return null;
-
+  if (loading) return <div className="loading-screen">Loading...</div>;
   if (role === "student") return <Navigate to="/student" />;
   if (role === "faculty") return <Navigate to="/faculty" />;
   if (role === "admin") return <Navigate to="/admin" />;
-
   return <Navigate to="/login" />;
 }
 
 /* 🔹 Protect role-based routes */
 function ProtectedRoute({ role, children }) {
   const { isAuthenticated, role: userRole, loading } = useAuth();
-
-  if (loading) return null;
+  if (loading) return <div className="loading-screen">Loading...</div>;
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (role && role !== userRole) return <Navigate to="/login" />;
-
   return children;
 }
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/test-vacant" element={<VacantRooms />} />
-      {/* 🔹 Default route */}
-      <Route path="/" element={<LeaveApplication />} />
-      {/* 🔹 Default route -admin faculty page*/} 
-      <Route path="/" element={<HomeRedirect />} />
-
-      <Route path="/Feedback" element={< Feedback />} />
-      {/* 🔹 Default route -admin faculty page*/} 
-      <Route path="/" element={<HomeRedirect />} />
-      <Route path="/StudentProfile" element={<StudentProfile />} />
-
-
-      {/* 🔹 Public routes */}
+      
+      {/* 🔹 Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/" element={<HomeRedirect />} />
 
-      <Route path="/LeaveAppliction" element={<LeaveApplication />} />
-
-      {/* 🔹 Student */}
+      {/* 🔹 STUDENT ROUTES (Wrapped in Layout + Protection) */}
       <Route
-        path="/student"
         element={
           <ProtectedRoute role="student">
-            <StudentDashboard />
+            <StudentLayout /> {/* ✅ This adds Navbar to all routes below */}
           </ProtectedRoute>
         }
-      />
+      >
+        {/* Dashboard Landing Page */}
+        <Route path="/student" element={<StudentDashboard />} />
+        
+        {/* Separate Functionality Pages */}
+        <Route path="/room-allocation" element={<RoomAllocation />} />
+        <Route path="/StudentProfile" element={<StudentProfile />} />
+        <Route path="/Feedback" element={<Feedback />} />
+        <Route path="/LeaveAppliction" element={<LeaveApplication />} />
+      </Route>
 
-      {/* 🔹 Faculty */}
+      {/* 🔹 FACULTY ROUTES */}
       <Route
         path="/faculty"
         element={
@@ -78,7 +76,7 @@ export default function AppRoutes() {
         }
       />
 
-      {/* 🔹 Admin */}
+      {/* 🔹 ADMIN ROUTES */}
       <Route
         path="/admin"
         element={
@@ -87,9 +85,11 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/test-vacant" element={<VacantRooms />} />
 
-      {/* 🔹 Fallback */}
+      {/* 🔹 Fallback for unknown routes */}
       <Route path="*" element={<Navigate to="/" />} />
+
     </Routes>
   );
 }

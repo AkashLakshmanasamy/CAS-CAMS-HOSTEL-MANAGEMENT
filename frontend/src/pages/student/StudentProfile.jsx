@@ -1,4 +1,4 @@
-// src/pages/StudentProfile.jsx
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../utils/supabase"; 
 import { useAuth } from "../../context/AuthContext"; // ✅ Using your AuthContext

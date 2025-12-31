@@ -1,0 +1,240 @@
+/* src/styles/Navbar-new.css */
+
+/* ---------- VARIABLES ---------- */
+:root {
+  /* Matches your Student Pages Theme */
+  --nav-gradient: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+  --nav-text: #ffffff;
+  --nav-text-secondary: #cbd5e0;
+  --nav-hover-bg: rgba(255, 255, 255, 0.15);
+  --nav-height: 70px;
+  
+  --accent-color: #63b3ed; /* Light Blue for active states */
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- NAVBAR CONTAINER ---------- */
+.navbar {
+  background: var(--nav-gradient);
+  height: var(--nav-height);
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ---------- BRANDING ---------- */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand-text h1 {
+  color: var(--nav-text);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.brand-text span {
+  color: var(--nav-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ---------- NAVIGATION MENU ---------- */
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li a {
+  color: var(--nav-text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-links li a:hover {
+  color: var(--nav-text);
+  background-color: var(--nav-hover-bg);
+}
+
+/* Active Link Style (The Pill) */
+.nav-links li a.active {
+  color: var(--nav-text);
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- USER ACTIONS ---------- */
+.nav-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-email {
+  color: var(--nav-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--nav-text);
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.2); /* Red tint on hover */
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* ---------- MOBILE TOGGLE (HAMBURGER) ---------- */
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1002;
+}
+
+.bar {
+  height: 3px;
+  width: 100%;
+  background-color: var(--nav-text);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Hamburger Animation */
+.navbar-toggle.open .top {
+  transform: translateY(8.5px) rotate(45deg);
+}
+.navbar-toggle.open .middle {
+  opacity: 0;
+}
+.navbar-toggle.open .bottom {
+  transform: translateY(-8.5px) rotate(-45deg);
+}
+
+/* ---------- RESPONSIVE DESIGN ---------- */
+@media (max-width: 968px) {
+  .navbar-toggle {
+    display: flex;
+  }
+
+  .navbar-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%; /* Full width on mobile */
+    height: 100vh;
+    background: #111827; /* Solid dark background for menu */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: right 0.3s ease-in-out;
+    padding: 2rem;
+    box-sizing: border-box;
+    z-index: 1001;
+  }
+
+  .navbar-menu.active {
+    right: 0;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .nav-links li a {
+    display: block;
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
+
+  .nav-user-actions {
+    flex-direction: column;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 0;
+    padding-top: 2rem;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .user-email {
+    font-size: 1rem;
+    opacity: 0.8;
+  }
+
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+}

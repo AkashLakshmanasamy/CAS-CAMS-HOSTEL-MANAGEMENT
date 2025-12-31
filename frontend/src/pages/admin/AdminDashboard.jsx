@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../../styles/AdminDashboard.css";
 import RoomRequests from "./RoomRequests";
-
+import VacantRooms from "./VacantRooms";
 /* ---------- Icon Helper ---------- */
 const Icon = ({ path }) => (
   <svg
@@ -37,6 +37,9 @@ export default function AdminDashboard() {
     switch (activeTab) {
       case "roomRequests":
         return <RoomRequests />;
+
+      case "vacantRooms":
+        return <VacantRooms/>;
   
       case "studentProfiles":
         return <h2>Student Profiles</h2>;
@@ -47,8 +50,7 @@ export default function AdminDashboard() {
       case "leaveApplications":
         return <h2>Leave Applications</h2>;
   
-      case "vacantRooms":
-        return <h2>Vacant Rooms</h2>;
+
   
       default:
         return <RoomRequests />;
