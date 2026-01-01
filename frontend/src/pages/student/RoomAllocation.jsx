@@ -64,10 +64,9 @@ export default function StudentRoomAllocation() {
 
   const rooms = useMemo(() => genRooms(form.floor), [form.floor]);
 
-  /* ✅ 1. FETCH OCCUPIED BEDS (Logic Added) */
+  /* ✅ 1. FETCH OCCUPIED BEDS */
   useEffect(() => {
     const fetchOccupiedRooms = async () => {
-      // Fetch room_number and bed_number where status is NOT rejected
       const { data, error } = await supabase
         .from("allocations")
         .select("room_number, bed_number")
@@ -83,16 +82,14 @@ export default function StudentRoomAllocation() {
     fetchOccupiedRooms();
   }, [form.hostel, form.floor]);
 
-  /* ✅ 2. HELPER: Determine Bed Colors (Logic Added) */
+  /* ✅ 2. HELPER: Determine Bed Colors */
   const getBedStatus = useCallback((roomNo) => {
     const status = [false, false, false, false];
     
-    // Find allocations for this specific room
     const allocationsInRoom = occupiedBeds.filter(
       (alloc) => alloc.room_number === roomNo
     );
 
-    // Mark occupied beds as true
     allocationsInRoom.forEach((alloc) => {
       const bedIndex = alloc.bed_number - 1; 
       if (bedIndex >= 0 && bedIndex < 4) {
@@ -165,7 +162,7 @@ export default function StudentRoomAllocation() {
     try {
       const { roomNo, bedIndex } = selected;
 
-      /* ✅ Logic: Double Check availability before inserting */
+      // 1. Check availability
       const bedIsTaken = occupiedBeds.some(
         (alloc) => alloc.room_number === roomNo && alloc.bed_number === (bedIndex + 1)
       );
@@ -176,6 +173,30 @@ export default function StudentRoomAllocation() {
         return;
       }
 
+      // 2. Upload Receipt Image
+      let receipt_url = null;
+      if (receipt) {
+        // Create unique file name
+        const fileExt = receipt.name.split('.').pop();
+        const fileName = `${form.regNo}_${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`; // Adjust path if you want folders like `receipts/${fileName}`
+
+        // Upload to 'receipts' bucket
+        const { error: uploadError } = await supabase.storage
+          .from('receipts') 
+          .upload(filePath, receipt);
+
+        if (uploadError) throw uploadError;
+
+        // Get Public URL
+        const { data: urlData } = supabase.storage
+          .from('receipts')
+          .getPublicUrl(filePath);
+        
+        receipt_url = urlData.publicUrl;
+      }
+
+      // 3. Insert Record with receipt_url
       const { error } = await supabase.from("allocations").insert({
         email: form.email,
         name: form.name,
@@ -187,6 +208,7 @@ export default function StudentRoomAllocation() {
         room_number: roomNo,
         bed_number: bedIndex + 1,
         status: "pending",
+        receipt_url: receipt_url // <--- Saving the URL here
       });
 
       if (error) throw error;
@@ -194,7 +216,8 @@ export default function StudentRoomAllocation() {
       setShowConfirmation(true);
       setExistingAllocation({ ...form, room_number: roomNo, bed_number: bedIndex + 1, status: "pending" });
     } catch (err) {
-      alert("Submission failed");
+      console.error("Submission error:", err);
+      alert("Submission failed: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -202,7 +225,7 @@ export default function StudentRoomAllocation() {
 
   /* ---------- STATUS VIEW ---------- */
   if (loadingStatus) {
-    return <div className="allocation-page">Checking application status…</div>;
+    return <div className="allocation-page">Checking application status...</div>;
   }
 
   if (existingAllocation) {
@@ -347,7 +370,7 @@ export default function StudentRoomAllocation() {
               <label className="file-custom-btn">
                 <Icon path={ICONS.upload} className="btn-icon" />
                 Choose File
-                <input type="file" hidden onChange={handleFileChange} />
+                <input type="file" hidden onChange={handleFileChange} accept="image/*,application/pdf" />
               </label>
               <span className="file-name">
                 {receipt ? receipt.name : "No file selected"}
@@ -370,7 +393,7 @@ export default function StudentRoomAllocation() {
               hostel={form.hostel}
               floor={form.floor}
               rooms={rooms}
-              getBeds={getBedStatus} /* ✅ CHANGED: Uses logic instead of false */
+              getBeds={getBedStatus}
               selected={selected}
               onSelectFreeBed={(roomNo, bedIndex) =>
                 setSelected({ roomNo, bedIndex })
