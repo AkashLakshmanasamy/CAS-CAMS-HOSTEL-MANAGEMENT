@@ -24,6 +24,7 @@ import VacantRooms from "../pages/admin/VacantRooms";
 import AdminMenuUpdate from "../pages/admin/AdminMenuUpdate"; 
 import AdminRulesUpdate from "../pages/admin/AdminRulesUpdate"; 
 import AdminAnnouncements from "../pages/admin/AdminAnnouncements"; // ✅ NEW: Import Admin Announcements
+import LeaveManagement from "../pages/admin/LeaveManagement";
 
 /* 🔹 Redirect user based on role */
 function HomeRedirect() {
@@ -118,6 +119,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute role="admin">
             <AdminAnnouncements />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/LeaveManagement"
+        element={
+          <ProtectedRoute role="admin">
+            <LeaveManagement />
           </ProtectedRoute>
         }
       />

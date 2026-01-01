@@ -5,6 +5,7 @@ import VacantRooms from "./VacantRooms";
 import AdminMenuUpdate from "./AdminMenuUpdate";
 import AdminRulesUpdate from "./AdminRulesUpdate";
 import AdminAnnouncements from "./AdminAnnouncements";
+import LeaveManagement from "./LeaveManagement";
 /* ---------- Icon Helper ---------- */
 const Icon = ({ path }) => (
   <svg
@@ -61,6 +62,9 @@ export default function AdminDashboard() {
 
       case "AdminAnnouncements":
         return <AdminAnnouncements/>
+
+      case "LeaveManagement":
+        return <LeaveManagement/>
   
 
   
@@ -107,7 +111,7 @@ export default function AdminDashboard() {
             label="Feedback"
           />
           <NavLink
-            tab="leaveApplications"
+            tab="LeaveManagement"
             icon={ICONS.leaveApplications}
             label="Leave Applications"
           />
