@@ -25,6 +25,7 @@ import AdminMenuUpdate from "../pages/admin/AdminMenuUpdate";
 import AdminRulesUpdate from "../pages/admin/AdminRulesUpdate"; 
 import AdminAnnouncements from "../pages/admin/AdminAnnouncements"; // ✅ NEW: Import Admin Announcements
 import LeaveManagement from "../pages/admin/LeaveManagement";
+import FeedbackManagement from "../pages/admin/FeedbackManagement";
 
 /* 🔹 Redirect user based on role */
 function HomeRedirect() {
@@ -93,6 +94,16 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/feedback"
+        element={
+          <ProtectedRoute role="admin">
+            <FeedbackManagement />
+          </ProtectedRoute>
+        }
+      />
+
+
       
       {/* Admin Feature Routes */}
       <Route

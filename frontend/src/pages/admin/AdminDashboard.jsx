@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import "../../styles/AdminDashboard.css";
+
+/* ---------- COMPONENT IMPORTS ---------- */
 import RoomRequests from "./RoomRequests";
 import VacantRooms from "./VacantRooms";
 import AdminMenuUpdate from "./AdminMenuUpdate";
 import AdminRulesUpdate from "./AdminRulesUpdate";
 import AdminAnnouncements from "./AdminAnnouncements";
 import LeaveManagement from "./LeaveManagement";
-/* ---------- Icon Helper ---------- */
+import FeedbackManagement from "./FeedbackManagement";
+
+/* ---------- ICON COMPONENT ---------- */
 const Icon = ({ path }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -19,7 +23,7 @@ const Icon = ({ path }) => (
   </svg>
 );
 
-/* ---------- Icons ---------- */
+/* ---------- ICON PATHS ---------- */
 const ICONS = {
   roomRequests:
     "M4 4h5v5H4V4zm7 0h5v5h-5V4zM4 11h5v5H4v-5zm7 0h5v5h-5v-5z",
@@ -33,47 +37,43 @@ const ICONS = {
     "M10 2a8 8 0 100 16 8 8 0 000-16z",
 };
 
+/* ---------- MAIN COMPONENT ---------- */
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("roomRequests");
 
-  /* ---------- TEMP PLACEHOLDERS ---------- */
+  /* ---------- TAB CONTENT RENDER ---------- */
   const renderTab = () => {
     switch (activeTab) {
       case "roomRequests":
         return <RoomRequests />;
 
-      case "vacantRooms":
-        return <VacantRooms/>;
-  
       case "studentProfiles":
         return <h2>Student Profiles</h2>;
-  
+
       case "feedback":
-        return <h2>Feedback</h2>;
-  
-      case "leaveApplications":
-        return <h2>Leave Applications</h2>;
-
-      case "AdminMenuUpdate":
-        return <AdminMenuUpdate/>
-      
-      case "AdminRulesUpdate":
-        return <AdminRulesUpdate/>
-
-      case "AdminAnnouncements":
-        return <AdminAnnouncements/>
+        return <FeedbackManagement />;
 
       case "LeaveManagement":
-        return <LeaveManagement/>
-  
+        return <LeaveManagement />;
 
-  
+      case "vacantRooms":
+        return <VacantRooms />;
+
+      case "AdminAnnouncements":
+        return <AdminAnnouncements />;
+
+      case "AdminMenuUpdate":
+        return <AdminMenuUpdate />;
+
+      case "AdminRulesUpdate":
+        return <AdminRulesUpdate />;
+
       default:
         return <RoomRequests />;
     }
   };
-  
 
+  /* ---------- SIDEBAR LINK ---------- */
   const NavLink = ({ tab, icon, label }) => (
     <button
       className={`admin-sidebar-link ${
@@ -95,46 +95,14 @@ export default function AdminDashboard() {
         </div>
 
         <nav className="admin-sidebar-nav">
-          <NavLink
-            tab="roomRequests"
-            icon={ICONS.roomRequests}
-            label="Room Requests"
-          />
-          <NavLink
-            tab="studentProfiles"
-            icon={ICONS.studentProfiles}
-            label="Student Profiles"
-          />
-          <NavLink
-            tab="feedback"
-            icon={ICONS.feedback}
-            label="Feedback"
-          />
-          <NavLink
-            tab="LeaveManagement"
-            icon={ICONS.leaveApplications}
-            label="Leave Applications"
-          />
-          <NavLink
-            tab="vacantRooms"
-            icon={ICONS.vacantRooms}
-            label="Vacant Rooms"
-          />
-          <NavLink
-            tab="AdminAnnouncements"
-            icon={ICONS.vacantRooms}
-            label="Announcements"
-          />
-          <NavLink
-            tab="AdminMenuUpdate"
-            icon={ICONS.vacantRooms}
-            label="Food Menu"
-          />
-          <NavLink
-            tab="AdminRulesUpdate"
-            icon={ICONS.vacantRooms}
-            label="Hostel Rules"
-          />
+          <NavLink tab="roomRequests" icon={ICONS.roomRequests} label="Room Requests" />
+          <NavLink tab="studentProfiles" icon={ICONS.studentProfiles} label="Student Profiles" />
+          <NavLink tab="feedback" icon={ICONS.feedback} label="Feedback" />
+          <NavLink tab="LeaveManagement" icon={ICONS.leaveApplications} label="Leave Applications" />
+          <NavLink tab="vacantRooms" icon={ICONS.vacantRooms} label="Vacant Rooms" />
+          <NavLink tab="AdminAnnouncements" icon={ICONS.vacantRooms} label="Announcements" />
+          <NavLink tab="AdminMenuUpdate" icon={ICONS.vacantRooms} label="Food Menu" />
+          <NavLink tab="AdminRulesUpdate" icon={ICONS.vacantRooms} label="Hostel Rules" />
         </nav>
       </aside>
 
