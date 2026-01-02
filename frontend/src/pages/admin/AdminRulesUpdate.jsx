@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../utils/supabase";
-import "../../styles/Rules.css";
+import "../../styles/AdminStyles.css"; // Uses the unified Admin theme
+
+// Shared Icon Component
+const Icon = ({ path, className = "icon" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+    <path fillRule="evenodd" d={path} clipRule="evenodd" />
+  </svg>
+);
+
+const ICONS = {
+  save: "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z",
+  clock: "M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z",
+  ban: "M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z",
+  list: "M9 2a1 1 0 000 2h2a1 1 0 100-2H9z M11 12a1 1 0 100 2h2a1 1 0 100-2h-2z M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2V2a2 2 0 012 2v2h2a1 1 0 100 2h-2v2a2 2 0 100 2h2v2a2 2 0 100 2h-2v2a2 2 0 11-2 0v-1h-2v1a1 1 0 10-2 0v-1H9v1a1 1 0 10-2 0v-1H5a1 1 0 01-1-1v-8A1 1 0 002 9V7a1 1 0 011-1h1V4a2 2 0 012-2z"
+};
 
 export default function AdminRulesUpdate() {
   const [loading, setLoading] = useState(true);
@@ -83,127 +97,175 @@ export default function AdminRulesUpdate() {
     setLoading(false);
   };
 
-  if (loading) return <div className="rules-page">Loading Editor...</div>;
+  if (loading) return <div className="admin-page"><div className="content-card">Loading Editor...</div></div>;
 
   return (
-    <div className="rules-page">
-      <div className="rules-card">
-        <div className="rules-header" style={{ background: "#1a202c" }}>
+    <div className="admin-page">
+      {/* Header */}
+      <div className="page-header">
+        <div>
           <h2>📝 Edit Rules & Regulations</h2>
-          <p>Update timings, fines, and guidelines.</p>
+          <p className="subtitle">Update timings, fines, and student guidelines.</p>
         </div>
+        
+        {/* Save Button (Top Right Action) */}
+        <button 
+            type="submit" 
+            form="rules-form" // Links to the form ID
+            className="btn-primary" 
+            disabled={loading}
+          >
+            <Icon path={ICONS.save} />
+            {loading ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
 
-        <form onSubmit={handleSave} className="rules-body">
-          {message && <div style={{ textAlign: "center", marginBottom: "20px", color: "green", fontWeight: "bold" }}>{message}</div>}
+      {message && (
+        <div style={{ 
+          marginBottom: "1.5rem", 
+          padding: "12px", 
+          borderRadius: "8px", 
+          textAlign: "center",
+          fontWeight: 600,
+          color: message.includes("✅") ? "#059669" : "#dc2626",
+          backgroundColor: message.includes("✅") ? "#ecfdf5" : "#fef2f2",
+        }}>
+          {message}
+        </div>
+      )}
 
-          {/* 1. General Rules */}
-          <div className="rules-section">
-            <div className="section-title">General Guidelines (One per line)</div>
-            <textarea
-              className="input-area"
-              rows="8"
-              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
-              value={rules.general_rules.join("\n")}
-              onChange={handleGeneralChange}
-            />
+      <form id="rules-form" onSubmit={handleSave}>
+        <div className="grid-2" style={{ alignItems: "start" }}>
+          
+          {/* --- LEFT COLUMN --- */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            
+            {/* 1. General Rules */}
+            <div className="content-card">
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827' }}>
+                <span style={{ marginRight: '8px' }}>📜</span> General Guidelines
+              </h3>
+              <div className="form-group">
+                <label>Enter rules (One per line)</label>
+                <textarea
+                  className="input-area"
+                  rows="12"
+                  value={rules.general_rules.join("\n")}
+                  onChange={handleGeneralChange}
+                />
+              </div>
+            </div>
+
+            {/* 4. Prohibited Items */}
+            <div className="content-card">
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827' }}>
+                <span style={{ marginRight: '8px' }}>🚫</span> Prohibited Items
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                {['electrical', 'entertainment', 'restricted'].map(cat => (
+                  <div key={cat} className="form-group">
+                    <label style={{ textTransform: "capitalize" }}>{cat} Items</label>
+                    <textarea
+                      className="input-area"
+                      rows="4"
+                      placeholder="Separate items by new line"
+                      value={rules.prohibited_items[cat]?.join("\n") || ""}
+                      onChange={(e) => handleProhibitedChange(cat, e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
 
-          {/* 2. Mess Timings */}
-          <div className="rules-section">
-            <div className="section-title">Mess Timings</div>
-            <div className="grid-2-col">
-              {['breakfast', 'lunch', 'snacks', 'dinner'].map(key => (
-                <div key={key}>
-                  <label style={{ textTransform: "capitalize", fontWeight: "bold" }}>{key}</label>
-                  <input
-                    type="text"
-                    value={rules.mess_timings[key] || ""}
-                    onChange={(e) => handleTimingChange('mess_timings', key, e.target.value)}
-                    style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-                  />
-                </div>
-              ))}
-              <div style={{ gridColumn: "span 2" }}>
-                <label style={{ fontWeight: "bold" }}>Note</label>
+          {/* --- RIGHT COLUMN --- */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+            {/* 2. Mess Timings */}
+            <div className="content-card">
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827' }}>
+                <span style={{ marginRight: '8px' }}>🍽️</span> Mess Timings
+              </h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+                {['breakfast', 'lunch', 'snacks', 'dinner'].map(key => (
+                  <div key={key} className="form-group">
+                    <label style={{ textTransform: "capitalize" }}>{key}</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={rules.mess_timings[key] || ""}
+                      onChange={(e) => handleTimingChange('mess_timings', key, e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="form-group" style={{ marginTop: "15px" }}>
+                <label>Note / Exception</label>
                 <input
                   type="text"
+                  className="input-field"
                   value={rules.mess_timings.note || ""}
                   onChange={(e) => handleTimingChange('mess_timings', 'note', e.target.value)}
-                  style={{ width: "100%", padding: "8px", marginTop: "5px" }}
                 />
               </div>
             </div>
-          </div>
 
-          {/* 3. Gate Timings */}
-          <div className="rules-section">
-            <div className="section-title">Gate Timings</div>
-            <div className="grid-2-col">
-              {['opening', 'day_scholars', 'curfew_regular', 'curfew_weekend'].map(key => (
-                <div key={key}>
-                  <label style={{ textTransform: "capitalize", fontWeight: "bold" }}>{key.replace('_', ' ')}</label>
-                  <input
-                    type="text"
-                    value={rules.gate_timings[key] || ""}
-                    onChange={(e) => handleTimingChange('gate_timings', key, e.target.value)}
-                    style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 4. Prohibited Items */}
-          <div className="rules-section">
-            <div className="section-title">Prohibited Items (One per line)</div>
-            <div className="grid-2-col">
-              {['electrical', 'entertainment', 'restricted'].map(cat => (
-                <div key={cat}>
-                  <label style={{ textTransform: "capitalize", fontWeight: "bold" }}>{cat}</label>
-                  <textarea
-                    rows="5"
-                    value={rules.prohibited_items[cat]?.join("\n") || ""}
-                    onChange={(e) => handleProhibitedChange(cat, e.target.value)}
-                    style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 5. Consequences */}
-          <div className="rules-section">
-            <div className="section-title">Consequences</div>
-            {rules.consequences.map((item, index) => (
-              <div key={index} style={{ marginBottom: "15px", padding: "10px", border: "1px solid #eee", borderRadius: "5px" }}>
-                <input
-                  type="text"
-                  value={item.title}
-                  onChange={(e) => handleConsequenceChange(index, "title", e.target.value)}
-                  style={{ fontWeight: "bold", width: "100%", marginBottom: "5px", padding: "5px" }}
-                />
-                <input
-                  type="text"
-                  value={item.desc}
-                  onChange={(e) => handleConsequenceChange(index, "desc", e.target.value)}
-                  style={{ width: "100%", padding: "5px" }}
-                />
+            {/* 3. Gate Timings */}
+            <div className="content-card">
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827' }}>
+                <span style={{ marginRight: '8px' }}>⏰</span> Gate Timings
+              </h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "15px" }}>
+                {['opening', 'day_scholars', 'curfew_regular', 'curfew_weekend'].map(key => (
+                  <div key={key} className="form-group">
+                    <label style={{ textTransform: "capitalize" }}>{key.replace('_', ' ')}</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={rules.gate_timings[key] || ""}
+                      onChange={(e) => handleTimingChange('gate_timings', key, e.target.value)}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* 5. Consequences */}
+            <div className="content-card">
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827' }}>
+                <span style={{ marginRight: '8px' }}>⚠️</span> Consequences
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                {rules.consequences.map((item, index) => (
+                  <div key={index} style={{ padding: "10px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
+                    <div className="form-group" style={{ marginBottom: "8px" }}>
+                      <input
+                        type="text"
+                        className="input-field"
+                        style={{ fontWeight: "bold" }}
+                        placeholder="Title"
+                        value={item.title}
+                        onChange={(e) => handleConsequenceChange(index, "title", e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <input
+                        type="text"
+                        className="input-field"
+                        placeholder="Description"
+                        value={item.desc}
+                        onChange={(e) => handleConsequenceChange(index, "desc", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
-
-          <button
-            type="submit"
-            style={{
-              width: "100%", padding: "15px", background: "#2c5282", color: "white",
-              fontSize: "1.2rem", fontWeight: "bold", border: "none", borderRadius: "8px", cursor: "pointer"
-            }}
-          >
-            Save All Changes
-          </button>
-
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

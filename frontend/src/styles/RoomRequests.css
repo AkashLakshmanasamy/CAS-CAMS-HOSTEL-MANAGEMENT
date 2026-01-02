@@ -1,115 +1,179 @@
-.room-requests {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  }
-  
-  /* Header */
-  .room-requests-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .room-requests-header h2 {
-    font-size: 20px;
-    font-weight: 600;
-  }
-  
-  .room-requests-header select {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-  }
-  
-  /* Table */
-  .table-wrapper {
-    overflow-x: auto;
-  }
-  
-  .requests-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .requests-table th {
-    padding: 14px;
-    text-align: left;
-    font-size: 13px;
-    color: #6b7280;
-    font-weight: 600;
-  }
-  
-  .requests-table td {
-    padding: 14px;
-    border-top: 1px solid #f1f1f1;
-  }
-  
-  .room-pill {
-    background: #eef2ff;
-    padding: 4px 12px;
-    border-radius: 8px;
-    font-weight: 600;
-  }
-  
-  .bed-pill {
-    background: #f3f4f6;
-    padding: 4px 12px;
-    border-radius: 8px;
-  }
-  
-  /* Status */
-  .status-badge {
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-  
-  .status-badge.pending {
-    background: #fef3c7;
-    color: #92400e;
-  }
-  
-  .status-badge.confirmed {
-    background: #d1fae5;
-    color: #065f46;
-  }
-  
-  .status-badge.rejected {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-  
-  /* Buttons */
-  .action-buttons {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .btn {
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: none;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  
-  .btn.confirm {
-    background: #6ee7b7;
-    color: #065f46;
-  }
-  
-  .btn.reject {
-    background: #fca5a5;
-    color: #7f1d1d;
-  }
-  
-  .empty-state {
-    text-align: center;
-    padding: 30px;
-    color: #9ca3af;
-  }
-  
+/* RoomRequests.css */
+
+/* --- 1. Variables --- */
+:root {
+  --primary: #2563EB;
+  --bg-page: #F3F4F6;
+  --text-main: #111827;
+  --text-muted: #6B7280;
+  --border: #E5E7EB;
+  --success-bg: #D1FAE5;
+  --success: #059669;
+  --danger-bg: #FEE2E2;
+  --danger: #DC2626;
+  --warning-bg: #FEF3C7;
+  --warning: #D97706;
+}
+
+/* --- 2. Container & Page Layout --- */
+.admin-page {
+  padding: 1.5rem;
+  background-color: var(--bg-page);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-main);
+  box-sizing: border-box;
+}
+
+.admin-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+/* --- 3. Filter Bar --- */
+.admin-page .filter-bar {
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-page .btn-secondary {
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-page .active-filter {
+  background-color: #eff6ff !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+  font-weight: 600;
+}
+
+/* --- 4. The Table Structure (CRITICAL PART) --- */
+.admin-page .table-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+  width: 100%; /* Force container width */
+}
+
+.admin-page .styled-table {
+  width: 100% !important; /* Force full width */
+  border-collapse: collapse;
+  table-layout: fixed !important; /* Locks column widths */
+}
+
+/* Header Styling */
+.admin-page .styled-table th {
+  background: #f9fafb;
+  text-align: left;
+  padding: 1rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* --- 5. STRICT Column Widths --- */
+/* These match the order in your JSX exactly */
+.admin-page .styled-table th:nth-child(1) { width: 22%; } /* Student */
+.admin-page .styled-table th:nth-child(2) { width: 13%; } /* Hostel */
+.admin-page .styled-table th:nth-child(3) { width: 22%; } /* Room Info */
+.admin-page .styled-table th:nth-child(4) { width: 15%; text-align: center; } /* Payment */
+.admin-page .styled-table th:nth-child(5) { width: 13%; text-align: center; } /* Status */
+.admin-page .styled-table th:nth-child(6) { width: 15%; text-align: right; } /* Actions */
+
+/* Cell Styling */
+.admin-page .styled-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+  color: #374151;
+  font-size: 0.9rem;
+  /* Prevent text from breaking layout */
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Align cell content to match headers */
+.admin-page .styled-table td:nth-child(4), 
+.admin-page .styled-table td:nth-child(5) { text-align: center; }
+
+.admin-page .styled-table td:nth-child(6) { text-align: right; }
+
+/* --- 6. Inner Elements --- */
+.admin-page .cell-title { font-weight: 600; display: block; }
+.admin-page .cell-subtitle { font-size: 0.8rem; color: #6b7280; display: block;}
+
+/* Room Pill */
+.admin-page .room-info-pill {
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  display: inline-block;
+  border: 1px solid #e5e7eb;
+}
+
+/* Document Link */
+.admin-page .doc-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+/* Status Badge */
+.admin-page .status-badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+}
+.status-badge.confirmed { background: var(--success-bg); color: var(--success); }
+.status-badge.pending { background: var(--warning-bg); color: var(--warning); }
+.status-badge.rejected { background: var(--danger-bg); color: var(--danger); }
+
+/* --- 7. Action Buttons Fix --- */
+.admin-page .action-row {
+  display: flex;
+  justify-content: flex-end; /* Push to right */
+  gap: 6px;
+  width: 100%;
+}
+
+.admin-page .action-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.action-btn.resolve { background: #d1fae5; color: #059669; }
+.action-btn.delete { background: #fee2e2; color: #dc2626; }

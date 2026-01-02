@@ -1,0 +1,155 @@
+.records-page {
+  padding: 1.5rem;
+  background-color: #fff; /* or match your dashboard bg */
+  min-height: 100%;
+}
+
+/* Header */
+.records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.records-header h2 { margin: 0; color: #111827; }
+.subtitle { color: #6b7280; font-size: 0.9rem; margin-top: 4px; }
+
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+.search-box input {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  color: #9ca3af;
+}
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+.data-table th {
+  background: #f9fafb;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+.student-cell { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.fw-bold { font-weight: 600; color: #111827; }
+.text-muted { color: #6b7280; }
+.text-small { font-size: 0.8rem; }
+
+/* Status Badges */
+.badge {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge.success { background: #d1fae5; color: #065f46; }
+.badge.pending { background: #fee2e2; color: #991b1b; }
+
+/* Actions */
+.actions { display: flex; gap: 8px; }
+.btn-icon {
+  border: none; background: none; cursor: pointer; padding: 4px;
+  border-radius: 4px; transition: 0.2s;
+}
+.btn-icon .icon { width: 18px; }
+.btn-icon.view:hover { background: #eff6ff; color: #2563eb; }
+.btn-icon.delete:hover { background: #fef2f2; color: #dc2626; }
+
+/* --- Modal Styles --- */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 50; padding: 1rem;
+}
+.modal-content {
+  background: white;
+  width: 100%; max-width: 700px;
+  max-height: 90vh; overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+.modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.close-btn { background: none; border: none; cursor: pointer; }
+.close-btn .icon { width: 24px; color: #6b7280; }
+
+.modal-body { padding: 1.5rem; }
+
+.modal-top { display: flex; gap: 1.5rem; align-items: center; }
+.modal-img-wrapper img {
+  width: 100px; height: 100px; border-radius: 8px; object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+.modal-main-info h2 { margin: 0 0 5px 0; font-size: 1.5rem; }
+.meta { color: #6b7280; margin-bottom: 10px; }
+.tag-row { display: flex; gap: 8px; }
+.tag { background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+
+.divider { height: 1px; background: #e5e7eb; margin: 1.5rem 0; }
+
+.info-grid-container {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+}
+.info-column h4 { margin: 0 0 1rem 0; color: #111827; border-bottom: 2px solid #e5e7eb; display: inline-block; padding-bottom: 4px; }
+.info-row { display: flex; margin-bottom: 8px; font-size: 0.9rem; }
+.info-row .label { width: 100px; color: #6b7280; flex-shrink: 0; }
+.info-row .value { font-weight: 500; color: #111827; }
+
+/* Docs */
+.docs-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.doc-card {
+  border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; text-align: center;
+  background: #f9fafb;
+}
+.doc-card span { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; }
+.doc-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: #2563eb; font-size: 0.85rem; text-decoration: none;
+}
+.small-icon { width: 14px; }
+
+@media (max-width: 600px) {
+  .info-grid-container, .docs-row { grid-template-columns: 1fr; }
+  .modal-top { flex-direction: column; text-align: center; }
+}

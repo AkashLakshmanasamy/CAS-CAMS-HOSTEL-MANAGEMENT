@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../utils/supabase";
-import "../../styles/Rules.css"; // Reuse your existing nice CSS
+import "../../styles/AdminStyles.css"; // Ensure this points to your unified CSS
+
+// Simple Icon Component for UI consistency
+const Icon = ({ path, className = "icon" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+    <path fillRule="evenodd" d={path} clipRule="evenodd" />
+  </svg>
+);
+
+const ICONS = {
+  send: "M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z",
+  trash: "M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+};
 
 export default function AdminAnnouncements() {
   const [list, setList] = useState([]);
@@ -46,74 +58,84 @@ export default function AdminAnnouncements() {
   };
 
   return (
-    <div className="rules-page">
-      <div className="rules-card">
-        <div className="rules-header">
+    <div className="admin-page">
+      {/* Header */}
+      <div className="page-header">
+        <div>
           <h2>📢 Manage Announcements</h2>
-          <p>Post updates for the Student Dashboard.</p>
+          <p className="subtitle">Post updates for the Student Dashboard.</p>
         </div>
+      </div>
 
-        <div className="rules-body">
-          {/* Form Section */}
-          <div className="rules-section">
-            <div className="section-title">Post New Announcement</div>
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+      <div className="grid-2">
+        {/* Left Column: Form */}
+        <div className="content-card">
+          <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#111827' }}>Post New Update</h3>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Announcement Title</label>
               <input
                 type="text"
-                placeholder="Title (e.g., Holiday Notice)"
+                className="input-field"
+                placeholder="e.g., Holiday Notice"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 required
-                style={{ padding: "12px", borderRadius: "8px", border: "1px solid #ccc" }}
               />
+            </div>
+
+            <div className="form-group">
+              <label>Message Details</label>
               <textarea
-                rows="3"
-                placeholder="Details..."
+                className="input-area"
+                rows="5"
+                placeholder="Write the details here..."
                 value={form.content}
                 onChange={(e) => setForm({ ...form, content: e.target.value })}
                 required
-                style={{ padding: "12px", borderRadius: "8px", border: "1px solid #ccc" }}
               />
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  padding: "12px", background: "#2c5282", color: "white",
-                  border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold"
-                }}
-              >
-                {loading ? "Posting..." : "Post Announcement"}
-              </button>
-            </form>
-          </div>
-
-          {/* List Section */}
-          <div className="rules-section">
-            <div className="section-title">History</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {list.map((item) => (
-                <div key={item.id} style={{
-                  padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px",
-                  display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc"
-                }}>
-                  <div>
-                    <h4 style={{ margin: "0 0 5px 0", color: "#2d3748" }}>{item.title}</h4>
-                    <p style={{ margin: 0, color: "#718096", fontSize: "0.9rem" }}>{item.content}</p>
-                    <small style={{ color: "#a0aec0" }}>{new Date(item.created_at).toLocaleDateString()}</small>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    style={{
-                      padding: "5px 10px", background: "#feb2b2", color: "#c53030",
-                      border: "none", borderRadius: "5px", cursor: "pointer"
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-              {list.length === 0 && <p>No announcements yet.</p>}
             </div>
+
+            <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
+              <Icon path={ICONS.send} />
+              {loading ? "Posting..." : "Post Announcement"}
+            </button>
+          </form>
+        </div>
+
+        {/* Right Column: History List */}
+        <div className="content-card">
+          <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#111827' }}>History</h3>
+          <div className="announcement-list">
+            {list.length === 0 && (
+              <p className="subtitle" style={{ textAlign: "center", fontStyle: "italic" }}>
+                No announcements posted yet.
+              </p>
+            )}
+
+            {list.map((item) => (
+              <div key={item.id} className="announcement-item">
+                <div style={{ flex: 1, paddingRight: '1rem' }}>
+                  <div style={{ fontWeight: 600, color: '#1f2937', marginBottom: '4px' }}>
+                    {item.title}
+                  </div>
+                  <p style={{ margin: 0, color: '#4b5563', fontSize: '0.9rem', lineHeight: '1.4' }}>
+                    {item.content}
+                  </p>
+                  <div className="announcement-meta">
+                    Posted on {new Date(item.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => handleDelete(item.id)}
+                  className="action-btn delete"
+                  title="Delete Announcement"
+                >
+                  <Icon path={ICONS.trash} />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>

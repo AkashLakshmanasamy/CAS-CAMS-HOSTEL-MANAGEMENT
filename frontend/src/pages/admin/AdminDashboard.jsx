@@ -9,6 +9,7 @@ import AdminRulesUpdate from "./AdminRulesUpdate";
 import AdminAnnouncements from "./AdminAnnouncements";
 import LeaveManagement from "./LeaveManagement";
 import FeedbackManagement from "./FeedbackManagement";
+import StudentRecords from "./StudentRecords";
 
 /* ---------- ICON COMPONENT ---------- */
 const Icon = ({ path }) => (
@@ -68,6 +69,9 @@ export default function AdminDashboard() {
       case "AdminRulesUpdate":
         return <AdminRulesUpdate />;
 
+      case "StudentRecords":
+        return <StudentRecords />;
+
       default:
         return <RoomRequests />;
     }
@@ -96,7 +100,7 @@ export default function AdminDashboard() {
 
         <nav className="admin-sidebar-nav">
           <NavLink tab="roomRequests" icon={ICONS.roomRequests} label="Room Requests" />
-          <NavLink tab="studentProfiles" icon={ICONS.studentProfiles} label="Student Profiles" />
+          <NavLink tab="StudentRecords" icon={ICONS.studentProfiles} label="Student Profiles" />
           <NavLink tab="feedback" icon={ICONS.feedback} label="Feedback" />
           <NavLink tab="LeaveManagement" icon={ICONS.leaveApplications} label="Leave Applications" />
           <NavLink tab="vacantRooms" icon={ICONS.vacantRooms} label="Vacant Rooms" />
