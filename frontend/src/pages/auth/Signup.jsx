@@ -89,7 +89,6 @@ export default function Signup() {
               onChange={(e) => setRole(e.target.value)}
             >
               <option value="student">Student</option>
-              <option value="faculty">Faculty</option>
               <option value="admin">Admin</option>
             </select>
           </div>
