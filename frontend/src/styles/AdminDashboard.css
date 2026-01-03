@@ -1,96 +1,98 @@
 /* Root layout */
 .admin-dashboard {
-    display: flex;
-    min-height: 100vh;
-    background: #f6f8fb;
-  }
-  
-  /* ---------- SIDEBAR ---------- */
-  .admin-sidebar {
-    width: 260px;
-    background: linear-gradient(180deg, #0f172a, #020617);
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    /* Removed padding: 16px; to ensure background fills the entire height */
+  display: flex;
+  min-height: 100vh;
+  background: #f6f8fb;
 }
 
+/* ---------- SIDEBAR ---------- */
 .admin-sidebar {
-  /* ... existing styles ... */
-  position: fixed; /* <-- ADD THIS */
-  top: 0; /* <-- ADD THIS */
-  left: 0; /* <-- ADD THIS (or right: 0 if on right) */
-  height: 100vh; /* <-- CHANGE TO FULL VIEWPORT HEIGHT */
-  z-index: 100; /* Optional: ensures it's above other elements */
-  /* width: 260px; is already there, which is good */
+  width: 260px;
+  background: linear-gradient(180deg, #0f172a, #020617);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  
+  /* Fixed Position Settings */
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
 }
-  
-  .admin-sidebar-header {
-    font-size: 22px;
-    font-weight: 700;
-    padding: 20px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    margin-bottom: 12px;
-  }
-  
-  /* Navigation */
-  .admin-sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 10px;
-  }
-  
-  .admin-sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: none;
-    background: transparent;
-    color: #cbd5f5;
-    cursor: pointer;
-    font-size: 15px;
-    transition: all 0.25s ease;
-  }
-  
-  .admin-sidebar-link svg {
-    width: 18px;
-    height: 18px;
-    opacity: 0.9;
-  }
-  
-  /* Hover */
-  .admin-sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-  }
-  
-  /* Active */
-  .admin-sidebar-link.active {
-    background: #6366f1;
-    color: #ffffff;
-    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
-  }
-  
-  
-  /* Main content */
-  .admin-content-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-left: 260px; /* <-- ADD THIS (Must match the sidebar's width) */
-    overflow-y: auto; /* Optional: Ensures content scrolls within this wrapper if needed */
-    width: calc(100% - 260px); /* Optional: To correctly calculate flex sizing */
+
+.admin-sidebar-header {
+  font-size: 22px;
+  font-weight: 700;
+  padding: 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 12px;
 }
-  .admin-content-header {
-    padding: 20px 30px;
-    background: #fff;
-    border-bottom: 1px solid #e5e7eb;
-  }
+
+/* Navigation */
+.admin-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: #cbd5f5;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.25s ease;
   
-  .admin-tab-content {
-    padding: 30px;
-  }
+  /* 🔥 THIS REMOVES THE UNDERLINE 🔥 */
+  text-decoration: none;
+}
+
+.admin-sidebar-link svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.9;
+}
+
+/* Hover */
+.admin-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  text-decoration: none; /* Ensure it stays removed on hover */
+}
+
+/* Active */
+.admin-sidebar-link.active {
+  background: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+  text-decoration: none;
+}
+
+/* Main content */
+.admin-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   
+  /* Layout adjustments for fixed sidebar */
+  margin-left: 260px; 
+  width: calc(100% - 260px);
+  overflow-y: auto;
+}
+
+.admin-content-header {
+  padding: 20px 30px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-tab-content {
+  padding: 30px;
+}

@@ -1,37 +1,56 @@
-// src/pages/auth/Login.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../utils/supabase";
-import { useNavigate, Link } from "react-router-dom"; // Added Link
-import "../../styles/Auth.css"; // Import CSS
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext"; 
+import "../../styles/Auth.css";
 
 export default function Login() {
+  const { user, role, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
 
   const navigate = useNavigate();
 
+  // 1. WATCH FOR AUTH CHANGES
+  useEffect(() => {
+    // Only redirect if we are fully loaded and have a user AND a role
+    if (!authLoading && user && role) {
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/student", { replace: true });
+      }
+    }
+  }, [user, role, authLoading, navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLocalLoading(true);
     setError("");
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
 
     if (error) {
       setError(error.message);
-      setLoading(false);
-      return;
+      setLocalLoading(false);
     }
-
-    // Redirect handled by AuthContext or manual push
-    navigate("/");
-    setLoading(false);
+    // Don't navigate here. The useEffect above will handle it.
   };
+
+  // 🔥 ANTI-FLICKER GUARD 🔥
+  // If the app is loading, OR if we are logged in, HIDE THE FORM.
+  if (authLoading || user) {
+    return (
+      <div className="auth-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="loading-spinner">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-container">
@@ -64,8 +83,8 @@ export default function Login() {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="auth-btn btn-primary">
-            {loading ? "Logging in..." : "Login"}
+          <button type="submit" disabled={localLoading} className="auth-btn btn-primary">
+            {localLoading ? "Logging in..." : "Login"}
           </button>
         </form>
 

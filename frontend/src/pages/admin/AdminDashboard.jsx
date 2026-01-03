@@ -1,93 +1,41 @@
-import React, { useState } from "react";
+import React from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom"; 
+import { supabase } from "../../utils/supabase";
 import "../../styles/AdminDashboard.css";
 
-/* ---------- COMPONENT IMPORTS ---------- */
-import RoomRequests from "./RoomRequests";
-import VacantRooms from "./VacantRooms";
-import AdminMenuUpdate from "./AdminMenuUpdate";
-import AdminRulesUpdate from "./AdminRulesUpdate";
-import AdminAnnouncements from "./AdminAnnouncements";
-import LeaveManagement from "./LeaveManagement";
-import FeedbackManagement from "./FeedbackManagement";
-import StudentRecords from "./StudentRecords";
-
-/* ---------- ICON COMPONENT ---------- */
+/* ---------- ICONS ---------- */
 const Icon = ({ path }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 20 20"
-    fill="currentColor"
-    width="18"
-    height="18"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
     <path d={path} />
   </svg>
 );
 
-/* ---------- ICON PATHS ---------- */
 const ICONS = {
-  roomRequests:
-    "M4 4h5v5H4V4zm7 0h5v5h-5V4zM4 11h5v5H4v-5zm7 0h5v5h-5v-5z",
-  studentProfiles:
-    "M15 8a3 3 0 10-6 0 3 3 0 006 0zM3 16a6 6 0 1112 0H3z",
-  feedback:
-    "M2 5a2 2 0 012-2h12a2 2 0 012 2v7a2 2 0 01-2 2H7l-4 3v-3H4a2 2 0 01-2-2V5z",
-  leaveApplications:
-    "M6 2h8v2H6V2zm0 4h8v12H6V6z",
-  vacantRooms:
-    "M10 2a8 8 0 100 16 8 8 0 000-16z",
+  roomRequests: "M4 4h5v5H4V4zm7 0h5v5h-5V4zM4 11h5v5H4v-5zm7 0h5v5h-5v-5z",
+  studentProfiles: "M15 8a3 3 0 10-6 0 3 3 0 006 0zM3 16a6 6 0 1112 0H3z",
+  feedback: "M2 5a2 2 0 012-2h12a2 2 0 012 2v7a2 2 0 01-2 2H7l-4 3v-3H4a2 2 0 01-2-2V5z",
+  leaveApplications: "M6 2h8v2H6V2zm0 4h8v12H6V6z",
+  vacantRooms: "M10 2a8 8 0 100 16 8 8 0 000-16z",
 };
 
-/* ---------- MAIN COMPONENT ---------- */
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("roomRequests");
+  const navigate = useNavigate();
 
-  /* ---------- TAB CONTENT RENDER ---------- */
-  const renderTab = () => {
-    switch (activeTab) {
-      case "roomRequests":
-        return <RoomRequests />;
-
-      case "studentProfiles":
-        return <h2>Student Profiles</h2>;
-
-      case "feedback":
-        return <FeedbackManagement />;
-
-      case "LeaveManagement":
-        return <LeaveManagement />;
-
-      case "vacantRooms":
-        return <VacantRooms />;
-
-      case "AdminAnnouncements":
-        return <AdminAnnouncements />;
-
-      case "AdminMenuUpdate":
-        return <AdminMenuUpdate />;
-
-      case "AdminRulesUpdate":
-        return <AdminRulesUpdate />;
-
-      case "StudentRecords":
-        return <StudentRecords />;
-
-      default:
-        return <RoomRequests />;
-    }
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login", { replace: true });
   };
 
-  /* ---------- SIDEBAR LINK ---------- */
-  const NavLink = ({ tab, icon, label }) => (
-    <button
-      className={`admin-sidebar-link ${
-        activeTab === tab ? "active" : ""
-      }`}
-      onClick={() => setActiveTab(tab)}
+  /* ---------- SIDEBAR LINK HELPER ---------- */
+  const SidebarLink = ({ to, icon, label }) => (
+    <NavLink 
+      to={to} 
+      end={to === "/admin"} // Ensures /admin is only active when EXACTLY at /admin
+      className={({ isActive }) => `admin-sidebar-link ${isActive ? "active" : ""}`}
     >
       <Icon path={icon} />
       <span>{label}</span>
-    </button>
+    </NavLink>
   );
 
   return (
@@ -99,15 +47,23 @@ export default function AdminDashboard() {
         </div>
 
         <nav className="admin-sidebar-nav">
-          <NavLink tab="roomRequests" icon={ICONS.roomRequests} label="Room Requests" />
-          <NavLink tab="StudentRecords" icon={ICONS.studentProfiles} label="Student Profiles" />
-          <NavLink tab="feedback" icon={ICONS.feedback} label="Feedback" />
-          <NavLink tab="LeaveManagement" icon={ICONS.leaveApplications} label="Leave Applications" />
-          <NavLink tab="vacantRooms" icon={ICONS.vacantRooms} label="Vacant Rooms" />
-          <NavLink tab="AdminAnnouncements" icon={ICONS.vacantRooms} label="Announcements" />
-          <NavLink tab="AdminMenuUpdate" icon={ICONS.vacantRooms} label="Food Menu" />
-          <NavLink tab="AdminRulesUpdate" icon={ICONS.vacantRooms} label="Hostel Rules" />
+          <SidebarLink to="/admin" icon={ICONS.roomRequests} label="Room Requests" />
+          <SidebarLink to="/admin/students" icon={ICONS.studentProfiles} label="Student Profiles" />
+          <SidebarLink to="/admin/feedback" icon={ICONS.feedback} label="Feedback" />
+          <SidebarLink to="/admin/leave" icon={ICONS.leaveApplications} label="Leave Applications" />
+          <SidebarLink to="/admin/vacant" icon={ICONS.vacantRooms} label="Vacant Rooms" />
+          <SidebarLink to="/admin/announcements" icon={ICONS.vacantRooms} label="Announcements" />
+          <SidebarLink to="/admin/update-menu" icon={ICONS.vacantRooms} label="Food Menu" />
+          <SidebarLink to="/admin/update-rules" icon={ICONS.vacantRooms} label="Hostel Rules" />
         </nav>
+        
+        {/* Logout Button */}
+        <div style={{ marginTop: "auto", padding: "1rem" }}>
+             <button onClick={handleLogout} className="admin-sidebar-link" style={{color: '#ff6b6b', width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer'}}>
+                <Icon path="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" />
+                <span style={{marginLeft: '10px'}}>Logout</span>
+             </button>
+        </div>
       </aside>
 
       {/* ---------- MAIN CONTENT ---------- */}
@@ -117,7 +73,8 @@ export default function AdminDashboard() {
         </header>
 
         <main className="admin-tab-content">
-          {renderTab()}
+          {/* Content for /admin/students, /admin/feedback etc. will appear here */}
+          <Outlet /> 
         </main>
       </div>
     </div>

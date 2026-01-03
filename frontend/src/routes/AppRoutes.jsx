@@ -1,12 +1,14 @@
-// src/routes/AppRoutes.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// Auth & Layouts
-import Login from "../pages/auth/login";
+// Auth & Context
+import Login from "../pages/auth/Login"; // Ensure casing matches file (Login.jsx vs login.jsx)
 import Signup from "../pages/auth/Signup";
-import StudentLayout from "../pages/student/StudentLayout"; 
 import { useAuth } from "../context/AuthContext";
+
+// Layouts
+import StudentLayout from "../pages/student/StudentLayout"; 
+import AdminDashboard from "../pages/admin/AdminDashboard"; // Now acts as AdminLayout
 
 // Student Pages
 import StudentDashboard from "../pages/student/StudentDashboard";
@@ -17,13 +19,12 @@ import StudentProfile from "../pages/student/StudentProfile";
 import Schedule from "../pages/student/Schedule"; 
 import Rules from "../pages/student/Rules";
 
-// Faculty & Admin Pages
-import FacultyDashboard from "../pages/faculty/FacultyDashboard";
-import AdminDashboard from "../pages/admin/AdminDashboard";
+// Admin Pages (Components)
+import RoomRequests from "../pages/admin/RoomRequests"; // You need to import this!
 import VacantRooms from "../pages/admin/VacantRooms";
 import AdminMenuUpdate from "../pages/admin/AdminMenuUpdate"; 
 import AdminRulesUpdate from "../pages/admin/AdminRulesUpdate"; 
-import AdminAnnouncements from "../pages/admin/AdminAnnouncements"; // ✅ NEW: Import Admin Announcements
+import AdminAnnouncements from "../pages/admin/AdminAnnouncements";
 import LeaveManagement from "../pages/admin/LeaveManagement";
 import FeedbackManagement from "../pages/admin/FeedbackManagement";
 import StudentRecords from "../pages/admin/StudentRecords";
@@ -33,7 +34,6 @@ function HomeRedirect() {
   const { role, loading } = useAuth();
   if (loading) return <div className="loading-screen">Loading...</div>;
   if (role === "student") return <Navigate to="/student" />;
-  if (role === "faculty") return <Navigate to="/faculty" />;
   if (role === "admin") return <Navigate to="/admin" />;
   return <Navigate to="/login" />;
 }
@@ -56,18 +56,9 @@ export default function AppRoutes() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/" element={<HomeRedirect />} />
 
-      {/* 🔹 STUDENT ROUTES (Wrapped in Layout + Protection) */}
-      <Route
-        element={
-          <ProtectedRoute role="student">
-            <StudentLayout />
-          </ProtectedRoute>
-        }
-      >
-        {/* Dashboard Landing Page */}
+      {/* 🔹 STUDENT ROUTES */}
+      <Route element={<ProtectedRoute role="student"><StudentLayout /></ProtectedRoute>}>
         <Route path="/student" element={<StudentDashboard />} />
-        
-        {/* Separate Functionality Pages */}
         <Route path="/room-allocation" element={<RoomAllocation />} />
         <Route path="/StudentProfile" element={<StudentProfile />} />
         <Route path="/Feedback" element={<Feedback />} />
@@ -76,87 +67,24 @@ export default function AppRoutes() {
         <Route path="/rules" element={<Rules />} />
       </Route>
 
-      {/* 🔹 FACULTY ROUTES */}
-      <Route
-        path="/faculty"
-        element={
-          <ProtectedRoute role="faculty">
-            <FacultyDashboard />
-          </ProtectedRoute>
-        }
-      />
+      {/* 🔹 ADMIN ROUTES (Nested Structure) */}
+      <Route element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>}>
+        
+        {/* Index route: What shows when you go to exactly /admin */}
+        <Route index element={<RoomRequests />} /> 
 
-      {/* 🔹 ADMIN ROUTES */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute role="admin">
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/feedback"
-        element={
-          <ProtectedRoute role="admin">
-            <FeedbackManagement />
-          </ProtectedRoute>
-        }
-      />
+        {/* Sub-routes: Renders INSIDE the Outlet of AdminDashboard */}
+        <Route path="/admin/students" element={<StudentRecords />} />
+        <Route path="/admin/feedback" element={<FeedbackManagement />} />
+        <Route path="/admin/leave" element={<LeaveManagement />} />
+        <Route path="/admin/vacant" element={<VacantRooms />} />
+        <Route path="/admin/announcements" element={<AdminAnnouncements />} />
+        <Route path="/admin/update-menu" element={<AdminMenuUpdate />} />
+        <Route path="/admin/update-rules" element={<AdminRulesUpdate />} />
+        
+      </Route>
 
-
-      
-      {/* Admin Feature Routes */}
-      <Route
-        path="/admin/update-menu"
-        element={
-          <ProtectedRoute role="admin">
-            <AdminMenuUpdate />
-          </ProtectedRoute>
-        }
-      />
-      
-      <Route
-        path="/admin/update-rules"
-        element={
-          <ProtectedRoute role="admin">
-            <AdminRulesUpdate />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ✅ NEW: Admin Announcements Page */}
-      <Route
-        path="/admin/announcements"
-        element={
-          <ProtectedRoute role="admin">
-            <AdminAnnouncements />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/LeaveManagement"
-        element={
-          <ProtectedRoute role="admin">
-            <LeaveManagement />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/StudentRecords"
-        element={
-          <ProtectedRoute role="admin">
-            <StudentRecords />
-          </ProtectedRoute>
-        }
-      />
-      
-
-      <Route path="/test-vacant" element={<VacantRooms />} />
-
-      {/* 🔹 Fallback for unknown routes */}
+      {/* 🔹 Fallback */}
       <Route path="*" element={<Navigate to="/" />} />
 
     </Routes>
