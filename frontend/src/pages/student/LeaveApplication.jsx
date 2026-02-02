@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext"; 
 import "../../styles/LeaveApplication.css";
 
-// --- Icons (SVG paths remain same) ---
+// --- Icons (Same as before) ---
 const Icon = ({ path, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`icon ${className}`}>
     <path fillRule="evenodd" d={path} clipRule="evenodd" />
@@ -54,7 +54,6 @@ export default function LeaveApplication() {
     }));
   };
 
-  // --- REFACTORED TO USE BACKEND API ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user?.email) return alert("Please log in.");
@@ -62,19 +61,19 @@ export default function LeaveApplication() {
 
     try {
       const data = new FormData();
-      // Append all text fields
       Object.keys(formData).forEach(key => {
         if (key !== 'studentSignature') data.append(key, formData[key]);
       });
       
-      // Append file and user info
-      data.append("studentSignature", formData.studentSignature);
+      if (formData.studentSignature) {
+        data.append("studentSignature", formData.studentSignature);
+      }
       data.append("email", user.email);
       data.append("userId", user.id);
 
       const response = await fetch(API_BASE_URL, {
         method: "POST",
-        body: data, // FormData sets correct Multipart/form-data header automatically
+        body: data,
       });
 
       const result = await response.json();
@@ -91,10 +90,15 @@ export default function LeaveApplication() {
   const fetchHistory = async () => {
     setHistoryLoading(true);
     try {
+      // In your backend, the data might be returned directly as an array or inside a key
       const response = await fetch(`${API_BASE_URL}?email=${user.email}`);
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      setHistoryData(result.history || []);
+      
+      if (!response.ok) throw new Error(result.error || "Fetch failed");
+      
+      // Handle both result.history or just result if it's a direct array
+      const historyArray = Array.isArray(result) ? result : (result.history || []);
+      setHistoryData(historyArray);
     } catch (err) {
       console.error("History error:", err);
     } finally {
@@ -114,6 +118,7 @@ export default function LeaveApplication() {
     setActiveTab("new");
   };
 
+  // --- Ticket View Modal ---
   if (viewTicket) {
     return (
       <div className="ticket-modal-backdrop">
@@ -124,16 +129,16 @@ export default function LeaveApplication() {
           </div>
           <div className="ticket-content printable-area">
             <div className="ticket-row header-row">
-              <div><strong>ID:</strong> #{viewTicket.id}</div>
+              <div><strong>ID:</strong> #{viewTicket.id.toString().slice(-6)}</div>
               <div className={`ticket-status ${viewTicket.status?.toLowerCase()}`}>
-                {viewTicket.status?.toUpperCase()} {viewTicket.status === 'Approved' ? '✅' : '⏳'}
+                {viewTicket.status?.toUpperCase()} {viewTicket.status?.toLowerCase() === 'approved' ? '✅' : '⏳'}
               </div>
             </div>
             <div className="ticket-divider"></div>
             <div className="ticket-grid">
               <div className="ticket-field"><label>Student Name</label><span>{viewTicket.name}</span></div>
               <div className="ticket-field"><label>Roll Number</label><span>{viewTicket.roll_number}</span></div>
-              <div className="ticket-field"><label>Branch/Year</label><span>{viewTicket.branch} - {viewTicket.year} ({viewTicket.semester})</span></div>
+              <div className="ticket-field"><label>Branch/Year</label><span>{viewTicket.branch} - {viewTicket.year} ({viewTicket.semester} Sem)</span></div>
             </div>
             <div className="ticket-divider"></div>
             <div className="ticket-grid">
@@ -142,17 +147,32 @@ export default function LeaveApplication() {
               <div className="ticket-field"><label>Time</label><span>{viewTicket.time}</span></div>
             </div>
             <div className="ticket-field full"><label>Reason</label><p>{viewTicket.reason}</p></div>
+            
             <div className="ticket-signatures">
-              <div className="sig-block"><label>Student Signature</label>{viewTicket.student_signature_url && <img src={viewTicket.student_signature_url} alt="Student Sig" />}</div>
               <div className="sig-block">
-                <label>Status Signature</label>
-                {viewTicket.status === 'Approved' ? <div className="approved-sig">Digitally Verified</div> : <div className="pending-sig">Awaiting Review</div>}
+                <label>Student Signature</label>
+                {viewTicket.student_signature_url ? (
+                  <img src={viewTicket.student_signature_url} alt="Student Sig" className="sig-img-small" />
+                ) : <div className="no-sig">N/A</div>}
+              </div>
+              <div className="sig-block">
+                <label>Admin Approval</label>
+                {viewTicket.status?.toLowerCase() === 'approved' ? (
+                  viewTicket.admin_signature_url ? (
+                    <img src={viewTicket.admin_signature_url} alt="Admin Sig" className="sig-img-small" />
+                  ) : <div className="approved-sig">Digitally Verified</div>
+                ) : <div className="pending-sig">Awaiting Review</div>}
               </div>
             </div>
-            <div className="ticket-footer"><small>System Generated: {new Date(viewTicket.created_at).toLocaleString()}</small></div>
+            
+            <div className="ticket-footer">
+              <small>Generated: {new Date(viewTicket.created_at).toLocaleString()}</small>
+            </div>
           </div>
           <div className="ticket-actions">
-            <button className="print-btn" onClick={() => window.print()}><Icon path={ICONS.print} /> Print / Save as PDF</button>
+            <button className="print-btn" onClick={() => window.print()}>
+              <Icon path={ICONS.print} /> Print / Save PDF
+            </button>
           </div>
         </div>
       </div>
@@ -236,26 +256,13 @@ export default function LeaveApplication() {
                 <div className="form-group"><label>Student Mobile *</label><input type="tel" name="studentMobile" value={formData.studentMobile} onChange={handleChange} required /></div>
                 <div className="form-group"><label>Parent Mobile *</label><input type="tel" name="parentMobile" value={formData.parentMobile} onChange={handleChange} required /></div>
               </div>
-              <div className="form-group full-width">
-                  <label className="checkbox-label">Informed Class Advisor?</label>
-                  <div className="radio-group">
-                    <label className={`radio-option ${formData.informedAdvisor === 'yes' ? 'selected' : ''}`}><input type="radio" name="informedAdvisor" value="yes" checked={formData.informedAdvisor === "yes"} onChange={handleChange} required /> Yes</label>
-                    <label className={`radio-option ${formData.informedAdvisor === 'no' ? 'selected' : ''}`}><input type="radio" name="informedAdvisor" value="no" checked={formData.informedAdvisor === "no"} onChange={handleChange} /> No</label>
-                  </div>
-              </div>
-              {formData.informedAdvisor === "yes" && (
-                <div className="form-grid transition-fade">
-                  <div className="form-group"><label>Advisor Name</label><input type="text" name="advisorName" value={formData.advisorName} onChange={handleChange} /></div>
-                  <div className="form-group"><label>Advisor Mobile</label><input type="tel" name="advisorMobile" value={formData.advisorMobile} onChange={handleChange} /></div>
-                </div>
-              )}
 
               <div className="form-divider"></div>
               <div className="form-group full-width">
-                <label>Student Signature *</label>
+                <label>Student Signature (Image) *</label>
                 <label className="file-upload-label">
                   <input type="file" name="studentSignature" onChange={handleChange} accept="image/*" required ref={studentSignatureRef} className="hidden-file-input" />
-                  <span className="file-upload-button"><Icon path={ICONS.upload} /> Upload Image</span>
+                  <span className="file-upload-button"><Icon path={ICONS.upload} /> Choose File</span>
                   <span className="file-name-display">{formData.studentSignature ? formData.studentSignature.name : "No file chosen"}</span>
                 </label>
               </div>
@@ -276,7 +283,7 @@ export default function LeaveApplication() {
                 {historyData.map((item) => (
                   <div key={item.id} className="history-item">
                     <div className="h-left">
-                       <div className="h-date">{new Date(item.date_of_stay).toLocaleDateString()}</div>
+                       <div className="h-date">{item.date_of_stay}</div>
                        <div className="h-reason">{item.reason}</div>
                     </div>
                     <div className="h-right">

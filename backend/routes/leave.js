@@ -3,11 +3,11 @@ const router = express.Router();
 const supabase = require("../utils/supabaseClient");
 const multer = require("multer");
 
-// Configure multer for file uploads (in memory)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// POST /api/leave
+// @route   POST /api/leave
+// @desc    Submit a new leave application with signature
 router.post("/", upload.single("studentSignature"), async (req, res) => {
   const {
     name, rollNumber, branch, year, semester,
@@ -16,18 +16,16 @@ router.post("/", upload.single("studentSignature"), async (req, res) => {
     advisorName, advisorMobile, email, userId
   } = req.body;
 
-  if (!name || !rollNumber || !branch || !year || !semester || !hostelName || !roomNumber || !date || !time || !reason || !studentMobile || !parentMobile || !informedAdvisor || !email || !userId) {
-    return res.status(400).json({ error: "All required fields must be provided" });
-  }
-
   try {
-    // --- Upload signature to Supabase storage ---
     let signatureUrl = null;
     if (req.file) {
-      const fileName = `signatures/${email.split("@")[0]}_${Date.now()}`;
+      const fileName = `signatures/${Date.now()}_${rollNumber}`;
       const { error: uploadError } = await supabase.storage
         .from("leave-signatures")
-        .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+        .upload(fileName, req.file.buffer, { 
+            contentType: req.file.mimetype,
+            upsert: true 
+        });
 
       if (uploadError) throw uploadError;
 
@@ -38,7 +36,6 @@ router.post("/", upload.single("studentSignature"), async (req, res) => {
       signatureUrl = publicUrlData.publicUrl;
     }
 
-    // --- Insert into Supabase table ---
     const { data, error } = await supabase.from("leave_applications").insert([{
       email,
       user_id: userId,
@@ -58,36 +55,55 @@ router.post("/", upload.single("studentSignature"), async (req, res) => {
       advisor_name: advisorName || null,
       advisor_mobile: advisorMobile || null,
       student_signature_url: signatureUrl,
-      status: "Pending"
-    }]);
+      status: "pending"
+    }]).select();
 
     if (error) throw error;
-    res.status(201).json({ message: "Leave application submitted successfully", leave: data });
+    res.status(201).json({ message: "Success", leave: data[0] });
 
   } catch (err) {
-    console.error("Error submitting leave application:", err.message);
-    res.status(500).json({ error: "Failed to submit leave application" });
+    console.error("Leave Post Error:", err.message);
+    res.status(500).json({ error: "Failed to submit application" });
   }
 });
 
-// GET /api/leave?email=...
+// @route   GET /api/leave
+// @desc    Admin: Fetch all applications | Student: Fetch by email query
 router.get("/", async (req, res) => {
   const { email } = req.query;
-  if (!email) return res.status(400).json({ error: "Email is required" });
+  try {
+    let query = supabase.from("leave_applications").select("*").order("created_at", { ascending: false });
+    
+    if (email) query = query.eq("email", email);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// @route   PATCH /api/leave/:id
+// @desc    Update status (Approve/Reject)
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status, admin_signature_url } = req.body;
 
   try {
     const { data, error } = await supabase
       .from("leave_applications")
-      .select("*")
-      .eq("email", email)
-      .order("created_at", { ascending: false });
+      .update({ 
+        status: status, 
+        admin_signature_url: admin_signature_url 
+      })
+      .eq("id", id)
+      .select();
 
     if (error) throw error;
-    res.status(200).json({ history: data });
-
+    res.status(200).json(data[0]);
   } catch (err) {
-    console.error("Error fetching leave history:", err.message);
-    res.status(500).json({ error: "Failed to fetch leave history" });
+    res.status(500).json({ error: err.message });
   }
 });
 

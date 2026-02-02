@@ -29,7 +29,7 @@ export default function Navbar() {
         
         <div className="navbar-brand" onClick={() => navigate("/student")}>
           <div className="brand-text">
-            <h1>Cube Hostels</h1>
+            <h1>Kongu Hostels</h1>
             <span>Student Portal</span>
           </div>
         </div>
