@@ -1,67 +1,49 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../../utils/supabase";
-import "../../styles/AdminStyles.css"; // Using the unified Admin theme
+import "../../styles/AdminStyles.css";
 
-// Simple Icon Component
-const Icon = ({ path, className = "icon" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-    <path fillRule="evenodd" d={path} clipRule="evenodd" />
-  </svg>
-);
-
-const ICONS = {
-  save: "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z",
-  coffee: "M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z M18 9v3a1 1 0 01-1 1H3a1 1 0 01-1-1V9h16zM3 15a2 2 0 01-2-2v-1h18v1a2 2 0 01-2 2H3z", 
-  sun: "M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h1a1 1 0 100 2h-1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z",
-  moon: "M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
-};
+const API_BASE = "http://localhost:5000/api/menu";
 
 export default function AdminMenuUpdate() {
   const [selectedDay, setSelectedDay] = useState("Monday");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  
-  // State for the form inputs
   const [menuData, setMenuData] = useState({
-    morning: "",
-    breakfast: "",
-    lunch: "",
-    evening: "",
-    dinner: ""
+    morning: "", breakfast: "", lunch: "", evening: "", dinner: ""
   });
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-  // Fetch menu for the selected day
+  // Fetch current menu when day changes
   useEffect(() => {
-    fetchMenu(selectedDay);
+    fetchMenuByDay();
+    // eslint-disable-next-line
   }, [selectedDay]);
 
-  const fetchMenu = async (day) => {
+  const fetchMenuByDay = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("weekly_menu")
-      .select("*")
-      .eq("day", day)
-      .single();
-
-    if (error) {
-      console.error("Error fetching menu:", error);
-    } else if (data) {
-      setMenuData({
-        morning: data.morning || "",
-        breakfast: data.breakfast || "",
-        lunch: data.lunch || "",
-        evening: data.evening || "",
-        dinner: data.dinner || ""
-      });
+    try {
+      const res = await fetch(API_BASE);
+      if (!res.ok) throw new Error("Failed to fetch menu list");
+      const data = await res.json();
+      
+      const dayData = data.find(item => item.day === selectedDay);
+      if (dayData) {
+        setMenuData({
+          morning: dayData.morning || "",
+          breakfast: dayData.breakfast || "",
+          lunch: dayData.lunch || "",
+          evening: dayData.evening || "",
+          dinner: dayData.dinner || ""
+        });
+      } else {
+        // Reset form if no data exists for that day yet
+        setMenuData({ morning: "", breakfast: "", lunch: "", evening: "", dinner: "" });
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setMenuData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleUpdate = async (e) => {
@@ -69,147 +51,137 @@ export default function AdminMenuUpdate() {
     setLoading(true);
     setMessage("");
 
-    const { error } = await supabase
-      .from("weekly_menu")
-      .update(menuData)
-      .eq("day", selectedDay);
+    try {
+      const res = await fetch(`${API_BASE}/${selectedDay}`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json" 
+        },
+        body: JSON.stringify(menuData)
+      });
 
-    if (error) {
-      setMessage("❌ Failed to update menu.");
-    } else {
-      setMessage("✅ Menu updated successfully!");
+      const result = await res.json();
+
+      if (res.ok) {
+        setMessage("✅ Menu updated successfully!");
+      } else {
+        // Show the specific error from the backend
+        setMessage(`❌ Error: ${result.error || "Failed to update"}`);
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      setMessage("❌ Network error: Is the backend server running?");
+    } finally {
+      setLoading(false);
+      // Clear success message after 3 seconds
+      setTimeout(() => setMessage(""), 3000);
     }
-    setLoading(false);
   };
 
   return (
     <div className="admin-page">
-      {/* Header */}
       <div className="page-header">
-        <div>
-          <h2>🍽️ Admin Menu Manager</h2>
-          <p className="subtitle">Update the weekly food schedule for students.</p>
-        </div>
+        <h2>🍽️ Admin Menu Manager</h2>
+        <p className="subtitle">Update the weekly food schedule for students.</p>
       </div>
 
-      {/* Main Grid: Days Selector (Left) vs Form (Right) */}
       <div className="grid-2" style={{ gridTemplateColumns: "250px 1fr", alignItems: "start" }}>
-        
-        {/* Left Column: Day Selector */}
+        {/* Day Selection Sidebar */}
         <div className="content-card">
-          <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.1rem', color: '#374151' }}>Select Day</h3>
+          <h3 style={{ marginBottom: '1rem' }}>Select Day</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {daysOfWeek.map(day => (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
+              <button 
+                key={day} 
+                onClick={() => setSelectedDay(day)} 
+                className={`day-select-btn ${selectedDay === day ? 'active' : ''}`}
                 style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '12px 15px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  transition: 'all 0.2s',
-                  backgroundColor: selectedDay === day ? '#2c5282' : '#f3f4f6',
-                  color: selectedDay === day ? 'white' : '#4b5563',
-                  boxShadow: selectedDay === day ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
-                }}
-              >
+                  width: '100%', textAlign: 'left', padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                  backgroundColor: selectedDay === day ? '#2c5282' : '#f3f4f6', 
+                  color: selectedDay === day ? 'white' : '#4b5563', 
+                  border: 'none', fontWeight: 600, transition: '0.2s'
+                }}>
                 {day}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Right Column: Edit Form */}
+        {/* Edit Form */}
         <div className="content-card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-            <h3 style={{ margin: 0, color: '#111827' }}>Editing: <span style={{ color: '#2c5282' }}>{selectedDay}</span></h3>
-            {message && (
-              <span style={{ 
-                fontSize: '0.9rem', 
-                fontWeight: 600, 
-                color: message.includes("✅") ? "#059669" : "#dc2626",
-                backgroundColor: message.includes("✅") ? "#ecfdf5" : "#fef2f2",
-                padding: "6px 12px",
-                borderRadius: "20px"
-              }}>
-                {message}
-              </span>
-            )}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', marginBottom: "1.5rem" }}>
+            <h3 style={{ margin: 0 }}>Editing: <span style={{ color: '#2c5282' }}>{selectedDay}</span></h3>
+            {message && <span className="status-msg" style={{ fontWeight: 600 }}>{message}</span>}
           </div>
 
-          <form onSubmit={handleUpdate}>
-            {/* Morning */}
+          <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <div className="form-group">
-              <label>☕ Morning (Drinks/Snacks)</label>
+              <label style={{ display: 'block', marginBottom: '5px' }}>☕ Morning (Drinks/Snacks)</label>
               <input 
                 type="text" 
-                name="morning" 
                 value={menuData.morning} 
-                onChange={handleInputChange} 
-                className="input-field"
-                placeholder="e.g. Coffee, Milk"
+                onChange={(e) => setMenuData({...menuData, morning: e.target.value})} 
+                className="input-field" 
+                placeholder="e.g. Coffee, Milk" 
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
               />
             </div>
-
-            {/* Breakfast */}
+            
             <div className="form-group">
-              <label>🍳 Breakfast</label>
+              <label style={{ display: 'block', marginBottom: '5px' }}>🍳 Breakfast</label>
               <textarea 
-                name="breakfast" 
                 value={menuData.breakfast} 
-                onChange={handleInputChange} 
-                className="input-area"
-                rows="2"
+                onChange={(e) => setMenuData({...menuData, breakfast: e.target.value})} 
+                className="input-area" 
+                rows="2" 
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
               />
             </div>
 
-            {/* Lunch */}
             <div className="form-group">
-              <label>🍱 Lunch</label>
+              <label style={{ display: 'block', marginBottom: '5px' }}>🍱 Lunch</label>
               <textarea 
-                name="lunch" 
                 value={menuData.lunch} 
-                onChange={handleInputChange} 
-                className="input-area"
-                rows="2"
+                onChange={(e) => setMenuData({...menuData, lunch: e.target.value})} 
+                className="input-area" 
+                rows="2" 
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
               />
             </div>
 
-            {/* Evening */}
             <div className="form-group">
-              <label>🍵 Evening (Drinks/Snacks)</label>
+              <label style={{ display: 'block', marginBottom: '5px' }}>🍵 Evening (Drinks/Snacks)</label>
               <input 
                 type="text" 
-                name="evening" 
                 value={menuData.evening} 
-                onChange={handleInputChange} 
-                className="input-field"
+                onChange={(e) => setMenuData({...menuData, evening: e.target.value})} 
+                className="input-field" 
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
               />
             </div>
 
-            {/* Dinner */}
             <div className="form-group">
-              <label>🍽️ Dinner</label>
+              <label style={{ display: 'block', marginBottom: '5px' }}>🍽️ Dinner</label>
               <textarea 
-                name="dinner" 
                 value={menuData.dinner} 
-                onChange={handleInputChange} 
-                className="input-area"
-                rows="2"
+                onChange={(e) => setMenuData({...menuData, dinner: e.target.value})} 
+                className="input-area" 
+                rows="2" 
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
               />
             </div>
 
             <button 
               type="submit" 
               className="btn-primary" 
-              disabled={loading}
-              style={{ width: "100%", justifyContent: "center", marginTop: "10px" }}
-            >
-              <Icon path={ICONS.save} />
+              disabled={loading} 
+              style={{ 
+                width: "100%", marginTop: "10px", padding: '12px', 
+                backgroundColor: '#2c5282', color: 'white', border: 'none', 
+                borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer',
+                fontWeight: 600
+              }}>
               {loading ? "Updating..." : "Save Changes"}
             </button>
           </form>
