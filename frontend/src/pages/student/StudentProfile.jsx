@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from "react";
-import { supabase } from "../../utils/supabase"; 
-import { useAuth } from "../../context/AuthContext"; // ✅ Using your AuthContext
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/StudentProfile.css";
 
-// --- Icons (Same as before) ---
+// --- Icons and Constants (Stay exactly as you provided) ---
 const Icon = ({ path, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`icon ${className}`}>
     <path fillRule="evenodd" d={path} clipRule="evenodd" />
@@ -21,18 +19,19 @@ const ICONS = {
   image: "M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
 };
 
-// --- Dropdown Constants ---
 const FLOORS = ["Ground", "First", "Second", "Third", "Dining First", "Dining Second"];
-const DEPARTMENTS = [ "Computer Science and Design", "Computer Science", "Information Technology", "Mechanical Engineering", "Civil Engineering", "Electronics and Communication", "Electrical Engineering", "Automobile Engineering", "Food Technology" ];
+const DEPARTMENTS = ["Computer Science and Design", "Computer Science", "Information Technology", "Mechanical Engineering", "Civil Engineering", "Electronics and Communication", "Electrical Engineering", "Automobile Engineering", "Food Technology"];
 const YEARS = ["I", "II", "III", "IV"];
 const SECTIONS = ["A", "B", "C", "D"];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const ADMISSION_MODES = ["Regular", "Lateral"];
 const FEE_MODES = ["Online", "Cash", "Cheque"];
 
-export default function StudentProfile() {
-  const { user, loading } = useAuth(); // ✅ Use AuthContext to get the user
+// --- API URL ---
+const API_BASE_URL = "http://localhost:5000/api/student";
 
+export default function StudentProfile() {
+  const { user, loading } = useAuth();
   const [form, setForm] = useState({
     floor: "", roomNo: "", department: "", rollNo: "", name: "", year: "", section: "",
     mobile: "", whatsapp: "", email: "", bloodGroup: "", fatherName: "", fatherContact: "",
@@ -40,7 +39,6 @@ export default function StudentProfile() {
     dob: "", address: "", district: "", admissionMode: "", feeMode: "",
   });
 
-  // State for files and previews
   const [passportPhoto, setPassportPhoto] = useState(null);
   const [idCardPhoto, setIdCardPhoto] = useState(null);
   const [feesReceipt, setFeesReceipt] = useState(null);
@@ -53,29 +51,22 @@ export default function StudentProfile() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // 1. Fetch Existing Data when User Loads
   useEffect(() => {
-    if (loading || !user) return; // Wait for AuthContext to be ready
-
-    // ✅ Set email from context immediately
-    setForm(prev => ({ ...prev, email: user.email })); 
+    if (loading || !user) return;
+    setForm(prev => ({ ...prev, email: user.email }));
 
     const fetchProfile = async () => {
       try {
-        const { data, error } = await supabase
-          .from("student_profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .single();
+        const response = await fetch(`${API_BASE_URL}/profile/${user.id}`);
+        if (!response.ok) throw new Error("Failed to load profile");
+        const data = await response.json();
 
-        if (error && error.code !== "PGRST116") throw error; // Ignore not found errors
-
-        if (data) {
+        if (data && Object.keys(data).length > 0) {
           setForm({
             floor: data.floor || "", roomNo: data.room_no || "", department: data.department || "",
             rollNo: data.roll_no || "", name: data.name || "", year: data.year || "", section: data.section || "",
             mobile: data.mobile || "", whatsapp: data.whatsapp || "", 
-            email: data.email || user.email, // Use DB email or Fallback to Auth email
+            email: data.email || user.email,
             bloodGroup: data.blood_group || "", fatherName: data.father_name || "", fatherContact: data.father_contact || "",
             fatherOccupation: data.father_occupation || "", motherName: data.mother_name || "", motherContact: data.mother_contact || "",
             motherOccupation: data.mother_occupation || "", dob: data.dob || "", address: data.address || "",
@@ -87,10 +78,9 @@ export default function StudentProfile() {
           if (data.fees_receipt_url) setFeesPreview(data.fees_receipt_url);
         }
       } catch (err) {
-        console.error("Error fetching profile:", err.message);
+        console.error("Fetch Error:", err.message);
       }
     };
-
     fetchProfile();
   }, [user, loading]);
 
@@ -107,12 +97,10 @@ export default function StudentProfile() {
       setErrorMessage("File size must be under 10MB"); 
       return; 
     }
-    
     setter(file);
     const reader = new FileReader();
     reader.onload = () => { setPreview(reader.result); };
     reader.readAsDataURL(file);
-    setErrorMessage(""); 
   };
 
   const validateForm = () => {
@@ -123,114 +111,47 @@ export default function StudentProfile() {
       "motherName", "motherContact", "dob", "address", "district",
       "admissionMode", "feeMode"
     ];
-
     requiredFields.forEach(f => { if (!form[f]?.toString().trim()) newErrors[f] = "Required"; });
-    if (form.mobile && !/^\d{10}$/.test(form.mobile)) newErrors.mobile = "Invalid No.";
-    if (form.whatsapp && !/^\d{10}$/.test(form.whatsapp)) newErrors.whatsapp = "Invalid No.";
-    
     if (!passportPhoto && !passportPreview) newErrors.passportPhoto = "Required";
     if (!idCardPhoto && !idCardPreview) newErrors.idCardPhoto = "Required";
     if (!feesReceipt && !feesPreview) newErrors.feesReceipt = "Required";
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const uploadFile = async (file, folderName) => {
-    if (!file) return null;
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-    const filePath = `${folderName}/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('student-files')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage.from('student-files').getPublicUrl(filePath);
-    return data.publicUrl;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    setIsSubmitting(true);
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!validateForm()) { 
-      setErrorMessage("Please fill out all required fields."); 
-      return; 
-    }
-
-    if (!user) {
-      setErrorMessage("You must be logged in to save.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
     try {
-      let passportUrl = passportPreview;
-      let idCardUrl = idCardPreview;
-      let feesUrl = feesPreview;
-
-      if (passportPhoto) passportUrl = await uploadFile(passportPhoto, 'passport');
-      if (idCardPhoto) idCardUrl = await uploadFile(idCardPhoto, 'id_card');
-      if (feesReceipt) feesUrl = await uploadFile(feesReceipt, 'fees');
-
-      const profileData = {
-        user_id: user.id, // Linked to AuthContext User
-        name: form.name,
-        roll_no: form.rollNo,
-        dob: form.dob,
-        blood_group: form.bloodGroup,
-        email: user.email, // ✅ Ensuring email matches Auth
-        department: form.department,
-        year: form.year,
-        section: form.section,
-        admission_mode: form.admissionMode,
-        mobile: form.mobile,
-        whatsapp: form.whatsapp,
-        father_name: form.fatherName,
-        father_contact: form.fatherContact,
-        father_occupation: form.fatherOccupation,
-        mother_name: form.motherName,
-        mother_contact: form.motherContact,
-        mother_occupation: form.motherOccupation,
-        address: form.address,
-        district: form.district,
-        floor: form.floor,
-        room_no: form.roomNo,
-        fee_mode: form.feeMode,
-        passport_photo_url: passportUrl,
-        id_card_photo_url: idCardUrl,
-        fees_receipt_url: feesUrl,
-      };
-
-      const { error } = await supabase
-        .from('student_profiles')
-        .upsert(profileData, { onConflict: 'user_id' });
-
-      if (error) throw error;
-      setSuccessMessage("Profile saved successfully!");
+      const formData = new FormData();
+      formData.append("userId", user.id);
+      Object.keys(form).forEach(key => formData.append(key, form[key]));
       
-    } catch (error) {
-      console.error("Submission Error:", error);
-      setErrorMessage(error.message || "Failed to save profile.");
+      if (passportPhoto) formData.append("passportPhoto", passportPhoto);
+      if (idCardPhoto) formData.append("idCardPhoto", idCardPhoto);
+      if (feesReceipt) formData.append("feesReceipt", feesReceipt);
+
+      const response = await fetch(`${API_BASE_URL}/update`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Failed to update");
+
+      setSuccessMessage("Profile updated successfully!");
+    } catch (err) {
+      setErrorMessage(err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ✅ Add a Loading State
-  if (loading) {
-    return <div className="loading-container">Loading profile...</div>; 
-  }
-
-  // If page loads but no user is found (handled by ProtectedRoute usually, but safe to have here)
-  if (!user) {
-    return <div className="loading-container">Please log in.</div>;
-  }
+  if (loading) return <div className="loading-container">Loading...</div>;
 
   return (
     <div className="profile-page">
@@ -244,230 +165,176 @@ export default function StudentProfile() {
         {errorMessage && <div className="alert error">{errorMessage}</div>}
 
         <form className="profile-form" onSubmit={handleSubmit}>
-          
+          {/* PERSONAL INFO */}
           <div className="form-section-title">
             <Icon path={ICONS.user} className="section-icon" /> Personal Information
           </div>
           <div className="form-grid">
-             <div className="form-group">
-              <label htmlFor="name">Full Name *</label>
-              <input type="text" id="name" name="name" value={form.name} onChange={onChange} className={errors.name ? 'error' : ''} />
-              {errors.name && <span className="error-text">{errors.name}</span>}
+            <div className="form-group">
+              <label>Full Name *</label>
+              <input type="text" name="name" value={form.name} onChange={onChange} className={errors.name ? 'error' : ''} />
             </div>
             <div className="form-group">
-              <label htmlFor="rollNo">Roll Number *</label>
-              <input type="text" id="rollNo" name="rollNo" value={form.rollNo} onChange={onChange} className={errors.rollNo ? 'error' : ''} />
-              {errors.rollNo && <span className="error-text">{errors.rollNo}</span>}
+              <label>Roll Number *</label>
+              <input type="text" name="rollNo" value={form.rollNo} onChange={onChange} className={errors.rollNo ? 'error' : ''} />
             </div>
             <div className="form-group">
-              <label htmlFor="dob">Date of Birth *</label>
-              <input type="date" id="dob" name="dob" value={form.dob} onChange={onChange} className={errors.dob ? 'error' : ''} />
-              {errors.dob && <span className="error-text">{errors.dob}</span>}
+              <label>Date of Birth *</label>
+              <input type="date" name="dob" value={form.dob} onChange={onChange} className={errors.dob ? 'error' : ''} />
             </div>
             <div className="form-group">
-              <label htmlFor="bloodGroup">Blood Group *</label>
-              <select id="bloodGroup" name="bloodGroup" value={form.bloodGroup} onChange={onChange} className={errors.bloodGroup ? 'error' : ''}>
+              <label>Blood Group *</label>
+              <select name="bloodGroup" value={form.bloodGroup} onChange={onChange} className={errors.bloodGroup ? 'error' : ''}>
                 <option value="">Select Group</option>
                 {BLOOD_GROUPS.map(bg => <option key={bg} value={bg}>{bg}</option>)}
               </select>
-              {errors.bloodGroup && <span className="error-text">{errors.bloodGroup}</span>}
             </div>
-
-            {/* ✅ LOCKED EMAIL FIELD using Context User */}
             <div className="form-group full-width">
-              <label htmlFor="email">Email Address (Locked)</label>
-              <input 
-                type="email" 
-                id="email" 
-                name="email" 
-                value={form.email} 
-                readOnly 
-                disabled 
-                className="read-only-input"
-                style={{ backgroundColor: "#f3f4f6", cursor: "not-allowed", opacity: 0.7 }}
-              />
+              <label>Email Address (Locked)</label>
+              <input type="email" value={form.email} readOnly disabled className="read-only-input" style={{ backgroundColor: "#f3f4f6", opacity: 0.7 }} />
             </div>
           </div>
 
           <div className="form-divider"></div>
-          {/* ... Remainder of the form (Academic, Contact, Hostel, Uploads) ... */}
-          {/* (Copy the rest of the form JSX from the previous message here, it remains identical) */}
-          
+
+          {/* ACADEMIC DETAILS */}
           <div className="form-section-title">
             <Icon path={ICONS.academic} className="section-icon" /> Academic Details
           </div>
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="department">Department *</label>
-              <select id="department" name="department" value={form.department} onChange={onChange} className={errors.department ? 'error' : ''}>
+              <label>Department *</label>
+              <select name="department" value={form.department} onChange={onChange}>
                 <option value="">Select Department</option>
                 {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
-              {errors.department && <span className="error-text">{errors.department}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="year">Year *</label>
-              <select id="year" name="year" value={form.year} onChange={onChange} className={errors.year ? 'error' : ''}>
+              <label>Year *</label>
+              <select name="year" value={form.year} onChange={onChange}>
                 <option value="">Select Year</option>
                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
-              {errors.year && <span className="error-text">{errors.year}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="section">Section *</label>
-              <select id="section" name="section" value={form.section} onChange={onChange} className={errors.section ? 'error' : ''}>
+              <label>Section *</label>
+              <select name="section" value={form.section} onChange={onChange}>
                 <option value="">Select Section</option>
                 {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              {errors.section && <span className="error-text">{errors.section}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="admissionMode">Admission Mode *</label>
-              <select id="admissionMode" name="admissionMode" value={form.admissionMode} onChange={onChange} className={errors.admissionMode ? 'error' : ''}>
+              <label>Admission Mode *</label>
+              <select name="admissionMode" value={form.admissionMode} onChange={onChange}>
                 <option value="">Select Mode</option>
                 {ADMISSION_MODES.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
-              {errors.admissionMode && <span className="error-text">{errors.admissionMode}</span>}
             </div>
           </div>
 
           <div className="form-divider"></div>
+
+          {/* CONTACT & PARENTS */}
           <div className="form-section-title">
             <Icon path={ICONS.contact} className="section-icon" /> Contact & Parent Info
           </div>
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="mobile">Student Mobile *</label>
-              <input type="tel" id="mobile" name="mobile" value={form.mobile} onChange={onChange} className={errors.mobile ? 'error' : ''} />
-              {errors.mobile && <span className="error-text">{errors.mobile}</span>}
+              <label>Student Mobile *</label>
+              <input type="tel" name="mobile" value={form.mobile} onChange={onChange} />
             </div>
             <div className="form-group">
-              <label htmlFor="whatsapp">WhatsApp *</label>
-              <input type="tel" id="whatsapp" name="whatsapp" value={form.whatsapp} onChange={onChange} className={errors.whatsapp ? 'error' : ''} />
-              {errors.whatsapp && <span className="error-text">{errors.whatsapp}</span>}
+              <label>WhatsApp *</label>
+              <input type="tel" name="whatsapp" value={form.whatsapp} onChange={onChange} />
             </div>
             <div className="form-group">
-              <label htmlFor="fatherName">Father's Name *</label>
-              <input type="text" id="fatherName" name="fatherName" value={form.fatherName} onChange={onChange} className={errors.fatherName ? 'error' : ''} />
-              {errors.fatherName && <span className="error-text">{errors.fatherName}</span>}
+              <label>Father's Name *</label>
+              <input type="text" name="fatherName" value={form.fatherName} onChange={onChange} />
             </div>
             <div className="form-group">
-              <label htmlFor="fatherContact">Father's Contact *</label>
-              <input type="tel" id="fatherContact" name="fatherContact" value={form.fatherContact} onChange={onChange} className={errors.fatherContact ? 'error' : ''} />
-              {errors.fatherContact && <span className="error-text">{errors.fatherContact}</span>}
+              <label>Father's Contact *</label>
+              <input type="tel" name="fatherContact" value={form.fatherContact} onChange={onChange} />
             </div>
             <div className="form-group">
-              <label htmlFor="motherName">Mother's Name *</label>
-              <input type="text" id="motherName" name="motherName" value={form.motherName} onChange={onChange} className={errors.motherName ? 'error' : ''} />
-              {errors.motherName && <span className="error-text">{errors.motherName}</span>}
+              <label>Mother's Name *</label>
+              <input type="text" name="motherName" value={form.motherName} onChange={onChange} />
             </div>
             <div className="form-group">
-              <label htmlFor="motherContact">Mother's Contact *</label>
-              <input type="tel" id="motherContact" name="motherContact" value={form.motherContact} onChange={onChange} className={errors.motherContact ? 'error' : ''} />
-              {errors.motherContact && <span className="error-text">{errors.motherContact}</span>}
+              <label>Mother's Contact *</label>
+              <input type="tel" name="motherContact" value={form.motherContact} onChange={onChange} />
             </div>
           </div>
-          
           <div className="form-group full-width" style={{ marginTop: "1rem" }}>
-            <label htmlFor="address">Permanent Address *</label>
-            <textarea id="address" name="address" value={form.address} onChange={onChange} rows="3" className={errors.address ? 'error' : ''}></textarea>
-            {errors.address && <span className="error-text">{errors.address}</span>}
+            <label>Permanent Address *</label>
+            <textarea name="address" value={form.address} onChange={onChange} rows="3"></textarea>
           </div>
           <div className="form-grid">
-             <div className="form-group">
-              <label htmlFor="district">District *</label>
-              <input type="text" id="district" name="district" value={form.district} onChange={onChange} className={errors.district ? 'error' : ''} />
-              {errors.district && <span className="error-text">{errors.district}</span>}
+            <div className="form-group">
+              <label>District *</label>
+              <input type="text" name="district" value={form.district} onChange={onChange} />
             </div>
           </div>
 
           <div className="form-divider"></div>
+
+          {/* HOSTEL DETAILS */}
           <div className="form-section-title">
             <Icon path={ICONS.family} className="section-icon" /> Hostel Details
           </div>
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="floor">Floor *</label>
-              <select id="floor" name="floor" value={form.floor} onChange={onChange} className={errors.floor ? 'error' : ''}>
+              <label>Floor *</label>
+              <select name="floor" value={form.floor} onChange={onChange}>
                 <option value="">Select Floor</option>
                 {FLOORS.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
-              {errors.floor && <span className="error-text">{errors.floor}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="roomNo">Room Number *</label>
-              <input type="text" id="roomNo" name="roomNo" value={form.roomNo} onChange={onChange} className={errors.roomNo ? 'error' : ''} />
-              {errors.roomNo && <span className="error-text">{errors.roomNo}</span>}
+              <label>Room Number *</label>
+              <input type="text" name="roomNo" value={form.roomNo} onChange={onChange} />
             </div>
-             <div className="form-group">
-              <label htmlFor="feeMode">Fee Payment Mode *</label>
-              <select id="feeMode" name="feeMode" value={form.feeMode} onChange={onChange} className={errors.feeMode ? 'error' : ''}>
+            <div className="form-group">
+              <label>Fee Payment Mode *</label>
+              <select name="feeMode" value={form.feeMode} onChange={onChange}>
                 <option value="">Select Mode</option>
                 {FEE_MODES.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
-              {errors.feeMode && <span className="error-text">{errors.feeMode}</span>}
             </div>
           </div>
 
           <div className="form-divider"></div>
+
+          {/* UPLOADS */}
           <div className="form-section-title">
             <Icon path={ICONS.image} className="section-icon" /> Documents Upload
           </div>
-          
           <div className="upload-grid">
             <div className="upload-card">
               <label>Passport Photo *</label>
               <div className="upload-area">
-                {passportPreview ? (
-                  <img src={passportPreview} alt="Preview" className="img-preview" />
-                ) : (
-                  <div className="placeholder"><Icon path={ICONS.image} /></div>
-                )}
+                {passportPreview ? <img src={passportPreview} alt="P" className="img-preview" /> : <div className="placeholder"><Icon path={ICONS.image} /></div>}
                 <input type="file" onChange={handleFileChange(setPassportPhoto, setPassportPreview)} accept="image/*" className="file-input" />
               </div>
-              {errors.passportPhoto && <span className="error-text-center">{errors.passportPhoto}</span>}
             </div>
-
             <div className="upload-card">
               <label>ID Card *</label>
               <div className="upload-area">
-                {idCardPreview ? (
-                  idCardPreview.endsWith('.pdf') ? <div className="pdf-preview">PDF Selected</div> : <img src={idCardPreview} alt="Preview" className="img-preview" />
-                ) : (
-                  <div className="placeholder"><Icon path={ICONS.image} /></div>
-                )}
+                {idCardPreview ? <img src={idCardPreview} alt="I" className="img-preview" /> : <div className="placeholder"><Icon path={ICONS.image} /></div>}
                 <input type="file" onChange={handleFileChange(setIdCardPhoto, setIdCardPreview)} accept="image/*,application/pdf" className="file-input" />
               </div>
-              {errors.idCardPhoto && <span className="error-text-center">{errors.idCardPhoto}</span>}
             </div>
-
             <div className="upload-card">
               <label>Fees Receipt *</label>
               <div className="upload-area">
-                {feesPreview ? (
-                  feesPreview.endsWith('.pdf') ? <div className="pdf-preview">PDF Selected</div> : <img src={feesPreview} alt="Preview" className="img-preview" />
-                ) : (
-                  <div className="placeholder"><Icon path={ICONS.image} /></div>
-                )}
+                {feesPreview ? <img src={feesPreview} alt="F" className="img-preview" /> : <div className="placeholder"><Icon path={ICONS.image} /></div>}
                 <input type="file" onChange={handleFileChange(setFeesReceipt, setFeesPreview)} accept="image/*,application/pdf" className="file-input" />
               </div>
-              {errors.feesReceipt && <span className="error-text-center">{errors.feesReceipt}</span>}
             </div>
           </div>
 
           <button type="submit" className="submit-btn" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <span className="spinner"></span> Saving...
-              </>
-            ) : (
-              <>
-                Save Profile
-                <Icon path={ICONS.save} />
-              </>
-            )}
+            {isSubmitting ? "Saving..." : "Save Profile"}
           </button>
-
         </form>
       </div>
     </div>
