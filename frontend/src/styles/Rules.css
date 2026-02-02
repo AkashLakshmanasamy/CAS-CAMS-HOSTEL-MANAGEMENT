@@ -318,3 +318,15 @@ body {
     grid-template-columns: 1fr;
   }
 }
+.capitalize {
+  text-transform: capitalize;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-weight: 600;
+  color: #1a365d;
+}
