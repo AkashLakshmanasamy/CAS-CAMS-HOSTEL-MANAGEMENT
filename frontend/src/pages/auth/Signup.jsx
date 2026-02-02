@@ -1,14 +1,13 @@
-// src/pages/auth/Signup.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"; 
 import "../../styles/Auth.css";
 
 export default function Signup() {
-  const { setUser, setRole, setLoading } = useAuth();
+  const { setLoading } = useAuth(); // We only need setLoading here now
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRoleState] = useState("student"); // Renamed local state to avoid conflict
+  const [role, setRoleState] = useState("student"); 
   const [error, setError] = useState("");
   const [localLoading, setLocalLoading] = useState(false);
 
@@ -24,23 +23,18 @@ export default function Signup() {
       const response = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role: role }), // send current role state
+        body: JSON.stringify({ email, password, role: role }), 
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        setUser(result.user);
-        setRole(result.user.role || role); // context setRole
         setLoading(false);
         setLocalLoading(false);
-
-        // Redirect based on role
-        if (result.user.role === "admin") {
-          navigate("/admin", { replace: true });
-        } else {
-          navigate("/student", { replace: true });
-        }
+        
+        // SUCCESS ACTION: Redirect to login instead of dashboard
+        alert("Account created successfully! Please login with your credentials.");
+        navigate("/login"); 
       } else {
         setError(result.error || "Signup failed");
         setLoading(false);
@@ -67,51 +61,26 @@ export default function Signup() {
       <div className="auth-card">
         <h2>Create Account</h2>
         <p className="auth-subtitle">Join the hostel management system</p>
-
         {error && <div className="auth-error">{error}</div>}
-
         <form onSubmit={handleSignup}>
           <div className="form-group">
-            <input
-              type="email"
-              className="auth-input"
-              placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input type="email" className="auth-input" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
-
           <div className="form-group">
-            <input
-              type="password"
-              className="auth-input"
-              placeholder="Create Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <input type="password" className="auth-input" placeholder="Create Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
-
           <div className="form-group">
-            <select
-              className="auth-input"
-              value={role}
-              onChange={(e) => setRoleState(e.target.value)} // updated state setter
-            >
+            <select className="auth-input" value={role} onChange={(e) => setRoleState(e.target.value)}>
               <option value="student">Student</option>
               <option value="admin">Admin</option>
             </select>
           </div>
-
           <button type="submit" disabled={localLoading} className="auth-btn btn-success">
             {localLoading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
-
         <div className="auth-footer">
-          Already have an account? 
-          <Link to="/login" className="auth-link">Login here</Link>
+          Already have an account? <Link to="/login" className="auth-link">Login here</Link>
         </div>
       </div>
     </div>

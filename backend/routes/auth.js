@@ -1,4 +1,3 @@
-// backend/routes/auth.js
 const express = require("express");
 const router = express.Router();
 const supabase = require("../utils/supabaseClient");
@@ -21,22 +20,17 @@ router.post("/signup", async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  // 2️⃣ Insert role in profiles table
-  if (data.user) {
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .insert({ id: data.user.id, role });
-
-    if (profileError) {
-      return res.status(500).json({ error: profileError.message });
-    }
-  }
-
-  // Return user with role
-  res.json({ user: { ...data.user, role } });
+  // Return user with role so frontend can navigate
+  res.json({ 
+    user: { 
+      id: data.user.id, 
+      email: data.user.email, 
+      role: role 
+    } 
+  });
 });
 
-// POST /api/auth/login
+// POST /api/auth/login (Standard Login)
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -53,17 +47,16 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ error: error?.message || "Login failed" });
   }
 
-  // fetch role from profiles table
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", data.user.id)
     .single();
 
-  const role = profile?.role || "student";
+  const userRole = profile?.role || "student";
 
   res.json({
-    user: { ...data.user, role },
+    user: { ...data.user, role: userRole },
     session: data.session,
   });
 });
