@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../../utils/supabase";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"; 
 import "../../styles/Auth.css";
 
 export default function Login() {
-  const { user, role, loading: authLoading } = useAuth();
+  const { setUser, setRole, loading, setLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,41 +12,50 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  // 1. WATCH FOR AUTH CHANGES
-  useEffect(() => {
-    // Only redirect if we are fully loaded and have a user AND a role
-    if (!authLoading && user && role) {
-      if (role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/student", { replace: true });
-      }
-    }
-  }, [user, role, authLoading, navigate]);
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLocalLoading(true);
     setError("");
+    setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      setError(error.message);
+      const result = await response.json();
+
+      if (response.ok) {
+        setUser(result.user);
+        setRole(result.user.role || "student");
+        setLoading(false);
+        setLocalLoading(false);
+
+        // Redirect based on role
+        if (result.user.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/student", { replace: true });
+        }
+      } else {
+        setError(result.error || "Login failed");
+        setLoading(false);
+        setLocalLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Please try again.");
+      setLoading(false);
       setLocalLoading(false);
     }
-    // Don't navigate here. The useEffect above will handle it.
   };
 
-  // 🔥 ANTI-FLICKER GUARD 🔥
-  // If the app is loading, OR if we are logged in, HIDE THE FORM.
-  if (authLoading || user) {
+  if (loading || localLoading) {
     return (
       <div className="auth-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div className="loading-spinner">Loading...</div>
+        <div className="loading-spinner">Logging in...</div>
       </div>
     );
   }

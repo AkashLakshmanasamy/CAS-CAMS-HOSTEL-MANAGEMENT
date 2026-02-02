@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { supabase } from "../../utils/supabase"; 
 import { useAuth } from "../../context/AuthContext"; 
 import "../../styles/LeaveApplication.css";
 
-// --- Icons ---
+// --- Icons (SVG paths remain same) ---
 const Icon = ({ path, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`icon ${className}`}>
     <path fillRule="evenodd" d={path} clipRule="evenodd" />
@@ -18,119 +17,86 @@ const ICONS = {
   send: "M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z",
   check: "M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z",
   history: "M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z",
-  search: "M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z",
   print: "M7.25 10.25a.75.75 0 00-1.5 0v6.5a.75.75 0 00.75.75h7a.75.75 0 00.75-.75v-6.5a.75.75 0 00-1.5 0v5h-5.5v-5zM6 6.75A.75.75 0 016.75 6h6.5a.75.75 0 01.75.75v3.5a.75.75 0 01-.75.75h-6.5A.75.75 0 016 10.25v-3.5z"
 };
 
+const API_BASE_URL = "http://localhost:5000/api/leave";
+
 export default function LeaveApplication() {
-  const { user } = useAuth(); // Get logged in user
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("new");
   
-  // --- FORM STATE ---
   const [formData, setFormData] = useState({
     name: "", rollNumber: "", branch: "", year: "", semester: "",
     hostelName: "", roomNumber: "", date: "", time: "", reason: "",
-    studentMobile: "", parentMobile: "", informedAdvisor: "",
+    studentMobile: "", parentMobile: "", informedAdvisor: "no",
     advisorName: "", advisorMobile: "", studentSignature: null,
   });
+
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const studentSignatureRef = useRef(null);
-
-  // --- HISTORY STATE ---
   const [historyData, setHistoryData] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [viewTicket, setViewTicket] = useState(null);
+  const studentSignatureRef = useRef(null);
 
-  // --- AUTO FETCH HISTORY ---
   useEffect(() => {
-    // Only fetch if tab is history and user exists and has an email
-    if (activeTab === 'history' && user && user.email) {
+    if (activeTab === 'history' && user?.email) {
       fetchHistory();
     }
   }, [activeTab, user]);
 
-  // --- HANDLERS ---
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: type === "file" ? files[0] : value,
-    });
+    }));
   };
 
+  // --- REFACTORED TO USE BACKEND API ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user || !user.email) {
-      alert("You must be logged in to submit a request.");
-      return;
-    }
+    if (!user?.email) return alert("Please log in.");
     setLoading(true);
 
     try {
-      let signatureUrl = null;
-      if (formData.studentSignature) {
-        const file = formData.studentSignature;
-        // Use email in filename to avoid collisions
-        const cleanEmail = user.email.split('@')[0].replace(/[^a-z0-9]/gi, '_');
-        const filePath = `signatures/${cleanEmail}_${Date.now()}`;
-        
-        const { error: uploadError } = await supabase.storage.from("leave-signatures").upload(filePath, file);
-        if (uploadError) throw uploadError;
-        const { data: publicUrlData } = supabase.storage.from("leave-signatures").getPublicUrl(filePath);
-        signatureUrl = publicUrlData.publicUrl;
-      }
-
-      // INSERT with Email
-      const { error } = await supabase.from("leave_applications").insert([{
-        email: user.email,     // <--- SAVING EMAIL HERE
-        user_id: user.id,      // Keeping this for reference, but relying on email for fetch
-        name: formData.name,
-        roll_number: formData.rollNumber,
-        branch: formData.branch,
-        year: formData.year,
-        semester: formData.semester,
-        hostel_name: formData.hostelName,
-        room_number: formData.roomNumber,
-        date_of_stay: formData.date,
-        time: formData.time,
-        reason: formData.reason,
-        student_mobile: formData.studentMobile,
-        parent_mobile: formData.parentMobile,
-        informed_advisor: formData.informedAdvisor,
-        advisor_name: formData.advisorName || null,
-        advisor_mobile: formData.advisorMobile || null,
-        student_signature_url: signatureUrl,
-        status: "Pending"
-      }]);
-
-      if (error) throw error;
-      setSubmitted(true);
+      const data = new FormData();
+      // Append all text fields
+      Object.keys(formData).forEach(key => {
+        if (key !== 'studentSignature') data.append(key, formData[key]);
+      });
       
+      // Append file and user info
+      data.append("studentSignature", formData.studentSignature);
+      data.append("email", user.email);
+      data.append("userId", user.id);
+
+      const response = await fetch(API_BASE_URL, {
+        method: "POST",
+        body: data, // FormData sets correct Multipart/form-data header automatically
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Submission failed");
+
+      setSubmitted(true);
     } catch (err) {
-      console.error("Submission failed:", err.message);
-      alert("Failed to submit application: " + err.message);
+      alert(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchHistory = async () => {
-    if (!user || !user.email) return;
     setHistoryLoading(true);
-    
     try {
-      // FETCH BY EMAIL
-      const { data, error } = await supabase
-        .from("leave_applications")
-        .select("*")
-        .eq('email', user.email) // <--- FETCHING BY EMAIL
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setHistoryData(data || []);
-    } catch (error) {
-      console.error("Error fetching history:", error);
+      const response = await fetch(`${API_BASE_URL}?email=${user.email}`);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setHistoryData(result.history || []);
+    } catch (err) {
+      console.error("History error:", err);
     } finally {
       setHistoryLoading(false);
     }
@@ -140,7 +106,7 @@ export default function LeaveApplication() {
     setFormData({
       name: "", rollNumber: "", branch: "", year: "", semester: "",
       hostelName: "", roomNumber: "", date: "", time: "", reason: "",
-      studentMobile: "", parentMobile: "", informedAdvisor: "",
+      studentMobile: "", parentMobile: "", informedAdvisor: "no",
       advisorName: "", advisorMobile: "", studentSignature: null,
     });
     if (studentSignatureRef.current) studentSignatureRef.current.value = "";
@@ -148,11 +114,6 @@ export default function LeaveApplication() {
     setActiveTab("new");
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // --- RENDER MODAL (No changes needed here) ---
   if (viewTicket) {
     return (
       <div className="ticket-modal-backdrop">
@@ -164,7 +125,9 @@ export default function LeaveApplication() {
           <div className="ticket-content printable-area">
             <div className="ticket-row header-row">
               <div><strong>ID:</strong> #{viewTicket.id}</div>
-              <div className="ticket-status approved">APPROVED ✅</div>
+              <div className={`ticket-status ${viewTicket.status?.toLowerCase()}`}>
+                {viewTicket.status?.toUpperCase()} {viewTicket.status === 'Approved' ? '✅' : '⏳'}
+              </div>
             </div>
             <div className="ticket-divider"></div>
             <div className="ticket-grid">
@@ -181,12 +144,15 @@ export default function LeaveApplication() {
             <div className="ticket-field full"><label>Reason</label><p>{viewTicket.reason}</p></div>
             <div className="ticket-signatures">
               <div className="sig-block"><label>Student Signature</label>{viewTicket.student_signature_url && <img src={viewTicket.student_signature_url} alt="Student Sig" />}</div>
-              <div className="sig-block"><label>Admin/Warden Signature</label>{viewTicket.admin_signature_url ? <img src={viewTicket.admin_signature_url} alt="Admin Sig" /> : <div className="pending-sig">Verified (Digital)</div>}</div>
+              <div className="sig-block">
+                <label>Status Signature</label>
+                {viewTicket.status === 'Approved' ? <div className="approved-sig">Digitally Verified</div> : <div className="pending-sig">Awaiting Review</div>}
+              </div>
             </div>
-            <div className="ticket-footer"><small>Generated on {new Date().toLocaleDateString()}</small></div>
+            <div className="ticket-footer"><small>System Generated: {new Date(viewTicket.created_at).toLocaleString()}</small></div>
           </div>
           <div className="ticket-actions">
-            <button className="print-btn" onClick={handlePrint}><Icon path={ICONS.print} /> Print / Save as PDF</button>
+            <button className="print-btn" onClick={() => window.print()}><Icon path={ICONS.print} /> Print / Save as PDF</button>
           </div>
         </div>
       </div>
@@ -210,30 +176,22 @@ export default function LeaveApplication() {
             <div className="success-state">
               <div className="success-icon-wrapper"><Icon path={ICONS.check} /></div>
               <h2>Application Submitted!</h2>
-              <p>Your request has been linked to <strong>{user?.email}</strong></p>
+              <p>Your request has been logged. You can track the approval status in history.</p>
               <div className="btn-group">
-                <button className="submit-btn outline" onClick={() => { setSubmitted(false); setActiveTab('history'); }}>Track Status</button>
+                <button className="submit-btn outline" onClick={() => setActiveTab('history')}>Track Status</button>
                 <button className="submit-btn" onClick={resetForm}>New Request</button>
               </div>
             </div>
           ) : (
             <form className="leave-form" onSubmit={handleSubmit}>
-              <div className="form-note-top">Apply for hostel stay permissions easily.</div>
+              <div className="form-note-top">Apply for hostel stay permissions.</div>
               
               <div className="form-section-title"><Icon path={ICONS.user} className="section-icon" /> Student Details</div>
               <div className="form-grid">
-                
-                {/* --- ADDED EMAIL FIELD (READ ONLY) --- */}
-                <div className="form-group full-width" style={{marginBottom: "15px"}}>
-                   <label>Email Address (Auto-filled)</label>
-                   <input 
-                     type="email" 
-                     value={user?.email || ""} 
-                     disabled 
-                     style={{background: "#f0f0f0", cursor: "not-allowed", color: "#666"}}
-                   />
+                <div className="form-group full-width">
+                   <label>Linked Email</label>
+                   <input type="email" value={user?.email || ""} disabled className="disabled-input" />
                 </div>
-
                 <div className="form-group"><label>Name *</label><input type="text" name="name" value={formData.name} onChange={handleChange} required /></div>
                 <div className="form-group"><label>Roll Number *</label><input type="text" name="rollNumber" value={formData.rollNumber} onChange={handleChange} required /></div>
                 <div className="form-group"><label>Branch *</label><input type="text" name="branch" value={formData.branch} onChange={handleChange} required /></div>
@@ -310,9 +268,9 @@ export default function LeaveApplication() {
         {activeTab === 'history' && (
           <div className="history-container">
             {historyLoading ? (
-               <div className="loading-spinner">Loading your records...</div>
+               <div className="loading-spinner">Fetching history...</div>
             ) : historyData.length === 0 ? (
-               <div className="empty-history"><p>No leave history found for {user?.email}.</p></div>
+               <div className="empty-history"><p>No records found for {user?.email}.</p></div>
             ) : (
               <div className="history-list">
                 {historyData.map((item) => (
@@ -323,7 +281,7 @@ export default function LeaveApplication() {
                     </div>
                     <div className="h-right">
                        <span className={`status-badge ${item.status?.toLowerCase()}`}>{item.status}</span>
-                       {item.status?.toLowerCase() === 'approved' && <button className="view-ticket-btn" onClick={() => setViewTicket(item)}>View Form</button>}
+                       <button className="view-ticket-btn" onClick={() => setViewTicket(item)}>View</button>
                     </div>
                   </div>
                 ))}

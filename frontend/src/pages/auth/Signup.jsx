@@ -1,55 +1,66 @@
 // src/pages/auth/Signup.jsx
 import { useState } from "react";
-import { supabase } from "../../utils/supabase";
 import { useNavigate, Link } from "react-router-dom";
-import "../../styles/Auth.css"; // Reuse the same CSS
+import { useAuth } from "../../context/AuthContext"; 
+import "../../styles/Auth.css";
 
 export default function Signup() {
+  const { setUser, setRole, setLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
+  const [role, setRoleState] = useState("student"); // Renamed local state to avoid conflict
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLocalLoading(true);
     setError("");
+    setLoading(true);
 
-    // 1. Create auth user
-    const { data, error: authError } = await supabase.auth.signUp({
-      email,
-      password
-    });
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role: role }), // send current role state
+      });
 
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
-      return;
-    }
+      const result = await response.json();
 
-    // 2. Insert role into profiles table
-    if (data?.user) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: data.user.id,
-          role
-        });
-
-      if (profileError) {
-        setError(profileError.message);
+      if (response.ok) {
+        setUser(result.user);
+        setRole(result.user.role || role); // context setRole
         setLoading(false);
-        return;
-      }
-    }
+        setLocalLoading(false);
 
-    alert("Signup successful! Please login.");
-    navigate("/login");
-    setLoading(false);
+        // Redirect based on role
+        if (result.user.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/student", { replace: true });
+        }
+      } else {
+        setError(result.error || "Signup failed");
+        setLoading(false);
+        setLocalLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Please try again.");
+      setLoading(false);
+      setLocalLoading(false);
+    }
   };
+
+  if (localLoading) {
+    return (
+      <div className="auth-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="loading-spinner">Creating Account...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-container">
@@ -86,15 +97,15 @@ export default function Signup() {
             <select
               className="auth-input"
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={(e) => setRoleState(e.target.value)} // updated state setter
             >
               <option value="student">Student</option>
               <option value="admin">Admin</option>
             </select>
           </div>
 
-          <button type="submit" disabled={loading} className="auth-btn btn-success">
-            {loading ? "Creating Account..." : "Sign Up"}
+          <button type="submit" disabled={localLoading} className="auth-btn btn-success">
+            {localLoading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
 

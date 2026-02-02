@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // Auth & Context
-import Login from "../pages/auth/Login"; // Ensure casing matches file (Login.jsx vs login.jsx)
+import Login from "../pages/auth/login"; // Ensure casing matches file (Login.jsx vs login.jsx)
 import Signup from "../pages/auth/Signup";
 import { useAuth } from "../context/AuthContext";
 
