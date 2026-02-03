@@ -58,7 +58,7 @@ export default function Navbar() {
             {/* ✅ 5. Feedback */}
             <li><NavLink to="/Feedback" onClick={closeMenu}>Feedback</NavLink></li>
 
-            <li><NavLink to="/Schedule" onClick={closeMenu}>Food Menu</NavLink></li>
+            <li><NavLink to="/Schedule" onClick={closeMenu}>Food</NavLink></li>
 
             <li><NavLink to="/Rules" onClick={closeMenu}>Rules </NavLink></li>
           </ul>
