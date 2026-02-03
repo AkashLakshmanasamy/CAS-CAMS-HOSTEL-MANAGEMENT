@@ -2,13 +2,13 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // Auth & Context
-import Login from "../pages/auth/login"; // Ensure casing matches file (Login.jsx vs login.jsx)
+import Login from "../pages/auth/login"; 
 import Signup from "../pages/auth/Signup";
 import { useAuth } from "../context/AuthContext";
 
 // Layouts
 import StudentLayout from "../pages/student/StudentLayout"; 
-import AdminDashboard from "../pages/admin/AdminDashboard"; // Now acts as AdminLayout
+import AdminDashboard from "../pages/admin/AdminDashboard"; 
 
 // Student Pages
 import StudentDashboard from "../pages/student/StudentDashboard";
@@ -19,8 +19,8 @@ import StudentProfile from "../pages/student/StudentProfile";
 import Schedule from "../pages/student/Schedule"; 
 import Rules from "../pages/student/Rules";
 
-// Admin Pages (Components)
-import RoomRequests from "../pages/admin/RoomRequests"; // You need to import this!
+// Admin Pages
+import RoomRequests from "../pages/admin/RoomRequests"; 
 import VacantRooms from "../pages/admin/VacantRooms";
 import AdminMenuUpdate from "../pages/admin/AdminMenuUpdate"; 
 import AdminRulesUpdate from "../pages/admin/AdminRulesUpdate"; 
@@ -28,6 +28,9 @@ import AdminAnnouncements from "../pages/admin/AdminAnnouncements";
 import LeaveManagement from "../pages/admin/LeaveManagement";
 import FeedbackManagement from "../pages/admin/FeedbackManagement";
 import StudentRecords from "../pages/admin/StudentRecords";
+
+// 🚀 ADDED: Import the new Hostel Setup component
+import AdminHostelSetup from "../pages/admin/AdminHostelSetup"; 
 
 /* 🔹 Redirect user based on role */
 function HomeRedirect() {
@@ -70,7 +73,6 @@ export default function AppRoutes() {
       {/* 🔹 ADMIN ROUTES (Nested Structure) */}
       <Route element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>}>
         
-        {/* Index route: What shows when you go to exactly /admin */}
         <Route index element={<RoomRequests />} /> 
 
         {/* Sub-routes: Renders INSIDE the Outlet of AdminDashboard */}
@@ -81,6 +83,9 @@ export default function AppRoutes() {
         <Route path="/admin/announcements" element={<AdminAnnouncements />} />
         <Route path="/admin/update-menu" element={<AdminMenuUpdate />} />
         <Route path="/admin/update-rules" element={<AdminRulesUpdate />} />
+        
+        {/* 🚀 ADDED: New Route for Hostel Generation and Session Setup */}
+        <Route path="/admin/setup" element={<AdminHostelSetup />} />
         
       </Route>
 

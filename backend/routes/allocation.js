@@ -1,44 +1,75 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router(); // <--- This MUST be before any router.get/post
 const supabase = require("../utils/supabaseClient");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 
-// POST: Create Allocation
-router.post("/", upload.single("receipt"), async (req, res) => {
-  const { email, name, regNo, department, feesStatus, hostel, floor, roomNumber, bedNumber } = req.body;
+// 1. Test Route (Verification)
+router.get("/test", (req, res) => res.json({ message: "Router is connected!" }));
 
+// 2. GET ALLOCATION STATUS
+router.get("/status", async (req, res) => {
+  const { email } = req.query;
   try {
-    let receipt_url = null;
-    if (req.file) {
-      const fileName = `receipts/${regNo}_${Date.now()}`;
-      const { error: uploadError } = await supabase.storage
-        .from("receipts")
-        .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-
-      if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage.from("receipts").getPublicUrl(fileName);
-      receipt_url = urlData.publicUrl;
-    }
-
     const { data, error } = await supabase
       .from("allocations")
-      .insert([{
-        email, name, reg_no: regNo, department, fees_status: feesStatus,
-        hostel, floor, room_number: roomNumber, bed_number: parseInt(bedNumber),
-        receipt_url, status: "pending"
-      }])
-      .select(); 
+      .select("*")
+      .eq("email", email)
+      .neq("status", "system") 
+      .maybeSingle();
 
-    if (error) return res.status(400).json({ error: error.message });
-    res.status(201).json({ message: "Applied successfully", data: data[0] });
+    if (error) throw error;
+    res.json({ allocation: data });
   } catch (err) {
-    console.error("Insert Error:", err.message);
-    res.status(500).json({ error: "Internal Server Error. Please try again." });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// GET: Check Occupied Beds
+// 3. SUBMIT NEW ALLOCATION
+router.post("/", upload.single("receipt"), async (req, res) => {
+  try {
+    const { email, name, regNo, department, hostel, floor, roomNumber, bedNumber } = req.body;
+    
+    const { data, error } = await supabase
+      .from("allocations")
+      .insert({
+        email,
+        name,
+        reg_no: regNo,
+        department,
+        hostel,
+        floor,
+        room_number: roomNumber,
+        bed_number: parseInt(bedNumber),
+        status: "pending",
+        receipt_url: "uploaded_link_here" 
+      });
+
+    if (error) throw error;
+    res.status(201).json({ message: "Success", allocation: data });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 4. GET CONFIGURATION
+router.get("/config/:hostel", async (req, res) => {
+  try {
+    const configKey = `CONFIG_${req.params.hostel.replace(/\s+/g, '_')}`;
+    const { data, error } = await supabase
+      .from("allocations")
+      .select("department")
+      .eq("reg_no", configKey)
+      .single();
+
+    if (error || !data) return res.json(null);
+    res.json(JSON.parse(data.department));
+  } catch (err) {
+    res.json(null);
+  }
+});
+
+// 5. GET OCCUPIED BEDS
 router.get("/occupied", async (req, res) => {
   const { hostel, floor } = req.query;
   try {
@@ -47,29 +78,10 @@ router.get("/occupied", async (req, res) => {
       .select("room_number, bed_number")
       .eq("hostel", hostel)
       .eq("floor", floor)
-      .neq("status", "rejected");
+      .neq("status", "rejected")
+      .neq("status", "system");
 
-    if (error) throw error;
     res.json(data || []);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET: Single user status
-router.get("/status", async (req, res) => {
-  const { email } = req.query;
-  if (!email) return res.status(400).json({ error: "Email required" });
-
-  try {
-    const { data, error } = await supabase
-      .from("allocations")
-      .select("*")
-      .eq("email", email)
-      .maybeSingle();
-
-    if (error) throw error;
-    res.json({ allocation: data });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

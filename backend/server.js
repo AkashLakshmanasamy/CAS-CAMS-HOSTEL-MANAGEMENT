@@ -23,7 +23,6 @@ const leaveRoutes = require("./routes/leave");
 const roomRoutes = require("./routes/room");
 const allocationRoutes = require('./routes/allocation');
 const rulesRoutes = require('./routes/rules');
-
 // 3. Mounting
 app.use('/api/student', studentRoutes); 
 app.use("/api/auth", authRoutes);

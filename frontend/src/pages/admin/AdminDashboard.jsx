@@ -16,6 +16,8 @@ const ICONS = {
   feedback: "M2 5a2 2 0 012-2h12a2 2 0 012 2v7a2 2 0 01-2 2H7l-4 3v-3H4a2 2 0 01-2-2V5z",
   leaveApplications: "M6 2h8v2H6V2zm0 4h8v12H6V6z",
   vacantRooms: "M10 2a8 8 0 100 16 8 8 0 000-16z",
+  // 🚀 Added: Gear/Setup icon for Session Setup
+  setup: "M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
 };
 
 export default function AdminDashboard() {
@@ -26,11 +28,10 @@ export default function AdminDashboard() {
     navigate("/login", { replace: true });
   };
 
-  /* ---------- SIDEBAR LINK HELPER ---------- */
   const SidebarLink = ({ to, icon, label }) => (
     <NavLink 
       to={to} 
-      end={to === "/admin"} // Ensures /admin is only active when EXACTLY at /admin
+      end={to === "/admin"} 
       className={({ isActive }) => `admin-sidebar-link ${isActive ? "active" : ""}`}
     >
       <Icon path={icon} />
@@ -40,7 +41,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      {/* ---------- SIDEBAR ---------- */}
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
           <h2>Cube Hostels</h2>
@@ -48,6 +48,10 @@ export default function AdminDashboard() {
 
         <nav className="admin-sidebar-nav">
           <SidebarLink to="/admin" icon={ICONS.roomRequests} label="Room Requests" />
+          
+          {/* 🚀 Added: Session Setup Link */}
+          <SidebarLink to="/admin/setup" icon={ICONS.setup} label="Session Setup" />
+          
           <SidebarLink to="/admin/students" icon={ICONS.studentProfiles} label="Student Profiles" />
           <SidebarLink to="/admin/feedback" icon={ICONS.feedback} label="Feedback" />
           <SidebarLink to="/admin/leave" icon={ICONS.leaveApplications} label="Leave Applications" />
@@ -57,7 +61,6 @@ export default function AdminDashboard() {
           <SidebarLink to="/admin/update-rules" icon={ICONS.vacantRooms} label="Hostel Rules" />
         </nav>
         
-        {/* Logout Button */}
         <div style={{ marginTop: "auto", padding: "1rem" }}>
              <button onClick={handleLogout} className="admin-sidebar-link" style={{color: '#ff6b6b', width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer'}}>
                 <Icon path="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" />
@@ -66,14 +69,12 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* ---------- MAIN CONTENT ---------- */}
       <div className="admin-content-wrapper">
         <header className="admin-content-header">
           <h1>Admin Dashboard</h1>
         </header>
 
         <main className="admin-tab-content">
-          {/* Content for /admin/students, /admin/feedback etc. will appear here */}
           <Outlet /> 
         </main>
       </div>
