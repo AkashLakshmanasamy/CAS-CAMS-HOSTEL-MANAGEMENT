@@ -9,200 +9,165 @@ const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4", "Hostel 5", "Ho
 const FLOORS = ["Ground", "First", "Second", "Third"];
 const API_BASE = "http://localhost:5000/api/allocation";
 
-const genRooms = (floor) => {
-    if (floor === "Ground") return Array.from({ length: 40 }, (_, i) => String(i + 1).padStart(3, "0"));
-    const start = floor === "First" ? 101 : floor === "Second" ? 201 : 301;
-    return Array.from({ length: 40 }, (_, i) => String(start + i));
-};
-
 export default function StudentRoomAllocation() {
-    const { user, loading } = useAuth();
-    const [form, setForm] = useState({ email: "", name: "", regNo: "", department: "", feesStatus: "Paid", hostel: HOSTELS[0], floor: FLOORS[0] });
-    const [receipt, setReceipt] = useState(null);
-    const [selected, setSelected] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [existingAllocation, setExistingAllocation] = useState(null);
-    const [loadingStatus, setLoadingStatus] = useState(false);
-    const [occupiedBeds, setOccupiedBeds] = useState([]);
-
-    const rooms = useMemo(() => genRooms(form.floor), [form.floor]);
   const { user, loading } = useAuth();
-  
-  // States
-  const [form, setForm] = useState({ 
-    email: "", 
-    name: "", 
-    regNo: "", 
-    department: "", 
-    feesStatus: "Paid", 
-    hostel: HOSTELS[0], 
-    floor: FLOORS[0] 
+
+  // --- States ---
+  const [form, setForm] = useState({
+    email: "",
+    name: "",
+    regNo: "",
+    department: "",
+    feesStatus: "Paid",
+    hostel: HOSTELS[0],
+    floor: FLOORS[0]
   });
+
   const [receipt, setReceipt] = useState(null);
   const [selected, setSelected] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingAllocation, setExistingAllocation] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [occupiedBeds, setOccupiedBeds] = useState([]);
-  
-  // Dynamic Config States
   const [config, setConfig] = useState(null);
-  const [isSessionOpen, setIsSessionOpen] = useState(true);
+  const [isSessionOpen, setIsSessionOpen] = useState(false);
+  
+  // 🔥 Eligibility State
+  const [isEligible, setIsEligible] = useState(null); 
 
-  // Helper: Fetch with JSON validation
   const safeFetch = async (url, options = {}) => {
     try {
       const res = await fetch(url, options);
       const contentType = res.headers.get("content-type");
-      
       if (contentType && contentType.includes("application/json")) {
         const data = await res.json();
-        return { data, ok: res.ok };
+        return { data, ok: res.ok, status: res.status };
       }
-      
-      const htmlText = await res.text();
-      console.error("Critical Error: Received HTML instead of JSON from:", url);
-      // This usually means the backend route (like /status) isn't defined in Express
-      throw new Error("Backend route not found (404). Please check your Express server.js");
-    } catch (err) {
-      throw err;
-    }
+      throw new Error("Backend error or route not found");
+    } catch (err) { throw err; }
   };
 
-  // 1. Fetch Hostel Configuration (Timing and Room Count)
+  // 1. FETCH CONFIG
   useEffect(() => {
     const fetchConfig = async () => {
       try {
+        setIsSessionOpen(false); 
         const { data } = await safeFetch(`${API_BASE}/config/${encodeURIComponent(form.hostel)}`);
-        if (data) {
-          setConfig(data);
-          const now = new Date();
-          const open = new Date(data.openTime);
-          const close = new Date(data.closeTime);
-          
-          // Check if current time is within the admin-defined window
-          setIsSessionOpen(now >= open && now <= close);
-        } else {
-          // Default fallbacks if no admin config exists yet
-          setConfig({ roomsPerFloor: 40 }); 
-          setIsSessionOpen(true);
+        
+        if (!data || Object.keys(data).length === 0) {
+          setConfig(null);
+          setIsSessionOpen(false); 
+          return;
         }
-      } catch (e) {
-        console.error("Config fetch error:", e.message);
+
+        setConfig(data);
+        const currentTime = new Date().getTime();
+        const openTime = new Date(data.openTime).getTime();
+        const closeTime = new Date(data.closeTime).getTime();
+        const isOpen = currentTime >= openTime && currentTime <= closeTime;
+        setIsSessionOpen(isOpen);
+
+      } catch (e) { 
+        console.error("Config Fetch Error:", e);
+        setIsSessionOpen(false); 
       }
     };
     fetchConfig();
   }, [form.hostel]);
 
-  // 2. Dynamically Generate Rooms based on Config
+  // 2. Room Generation
   const rooms = useMemo(() => {
     const count = parseInt(config?.roomsPerFloor) || 40;
-    if (form.floor === "Ground") {
-      return Array.from({ length: count }, (_, i) => String(i + 1).padStart(3, "0"));
-    }
-    const start = form.floor === "First" ? 101 : form.floor === "Second" ? 201 : 301;
-    return Array.from({ length: count }, (_, i) => String(start + i));
+    const start = form.floor === "Ground" ? 1 : form.floor === "First" ? 101 : form.floor === "Second" ? 201 : 301;
+    return Array.from({ length: count }, (_, i) => form.floor === "Ground" ? String(i + 1).padStart(3, "0") : String(start + i));
   }, [form.floor, config]);
 
-  // 3. Fetch Occupied Beds
-  useEffect(() => {
-    const fetchOccupied = async () => {
-        try {
-            const res = await fetch(`${API_BASE}/occupied?hostel=${encodeURIComponent(form.hostel)}&floor=${form.floor}`);
-            const data = await res.json();
-            setOccupiedBeds(data || []);
-        } catch (err) { console.error("Occupied Fetch Error:", err); }
-    };
+  // 3. Fetch Occupied
+  const fetchOccupied = useCallback(async () => {
+    try {
+      const { data } = await safeFetch(`${API_BASE}/occupied?hostel=${encodeURIComponent(form.hostel)}&floor=${form.floor}`);
+      setOccupiedBeds(data || []);
+    } catch (err) { console.error(err); }
+  }, [form.hostel, form.floor]);
 
-    useEffect(() => { fetchOccupied(); }, [form.hostel, form.floor]);
+  useEffect(() => { fetchOccupied(); }, [fetchOccupied]);
 
-    useEffect(() => {
-        if (!loading && user?.email) {
-            setForm(prev => ({ ...prev, email: user.email }));
-            const checkStatus = async () => {
-                setLoadingStatus(true);
-                try {
-                    const res = await fetch(`${API_BASE}/status?email=${user.email}`);
-                    const data = await res.json();
-                    if (data && data.allocation) setExistingAllocation(data.allocation);
-                } catch (err) { console.error("Status Check Error:", err); }
-                setLoadingStatus(false);
-            };
-            checkStatus();
-        }
-    }, [user, loading]);
-  // 4. Check if student already has an allocation
+  // 4. STATUS CHECK & ELIGIBILITY LOGIC
   useEffect(() => {
     if (!loading && user?.email) {
-      setForm(prev => ({ ...prev, email: user.email }));
-      const checkStatus = async () => {
+      const getProfileAndStatus = async () => {
         setLoadingStatus(true);
         try {
-          const { data } = await safeFetch(`${API_BASE}/status?email=${user.email}`);
-          if (data && data.allocation) setExistingAllocation(data.allocation);
+          const [profileRes, statusRes] = await Promise.all([
+            fetch(`http://localhost:5000/api/student/profile/${user.id}`),
+            safeFetch(`${API_BASE}/status?email=${user.email}`)
+          ]);
+
+          // Handle Profile Data & Check Eligibility
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            
+            // Check if fee_mode exists in profile
+            if (profileData && profileData.fee_mode) {
+              setIsEligible(true);
+              setForm(prev => ({
+                ...prev,
+                name: profileData.name || prev.name,
+                regNo: profileData.roll_no || prev.regNo,
+                department: profileData.department || prev.department,
+                email: user.email,
+                floor: profileData.floor || prev.floor
+              }));
+            } else {
+              setIsEligible(false);
+            }
+          }
+
+          // Handle Existing Allocation
+          const { data: statusData } = statusRes;
+          if (statusData && statusData.allocation && 
+              statusData.allocation.status !== "rejected" && 
+              statusData.allocation.status !== "system") {
+            setExistingAllocation(statusData.allocation);
+          } else {
+            setExistingAllocation(null);
+          }
+
         } catch (err) { 
-          console.error("Status Check Error:", err.message); 
+          console.error("Fetch Error:", err.message);
+          setIsEligible(false);
+          setForm(prev => ({ ...prev, email: user.email }));
         }
         setLoadingStatus(false);
       };
-      checkStatus();
+      getProfileAndStatus();
     }
   }, [user, loading]);
 
-    // UPDATED: Changed status array to length 3
-    const getBedStatus = useCallback((roomNo) => {
-        const status = [false, false, false]; // Represents 3 beds
-        occupiedBeds.filter(a => String(a.room_number) === String(roomNo)).forEach(a => {
-            if (a.bed_number >= 1 && a.bed_number <= 3) {
-                status[a.bed_number - 1] = true;
-            }
-        });
-        return status;
-    }, [occupiedBeds]);
+  const getBedStatus = useCallback((roomNo) => {
+    const status = [false, false, false]; 
+    occupiedBeds.filter(a => String(a.room_number) === String(roomNo)).forEach(a => {
+      if (a.bed_number >= 1 && a.bed_number <= 3) status[a.bed_number - 1] = true;
+    });
+    return status;
+  }, [occupiedBeds]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!form.name || !form.regNo || !receipt || !selected) {
-            alert("Please complete the form and select a bed."); return;
-        }
+  // 5. SUBMIT LOGIC
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.regNo || !form.department || !receipt || !selected) {
-      alert("Please complete the form and select a bed."); 
-      return;
-    }
+    if (!receipt || !selected) return alert("Select a bed and upload receipt.");
 
-        setIsSubmitting(true);
-        const formData = new FormData();
-        Object.keys(form).forEach(key => formData.append(key, form[key]));
-        formData.append("receipt", receipt);
-        formData.append("roomNumber", selected.roomNo);
-        formData.append("bedNumber", selected.bedIndex + 1);
+    setIsSubmitting(true);
+    const formData = new FormData();
+    Object.keys(form).forEach(key => formData.append(key, form[key]));
+    formData.append("receipt", receipt);
+    formData.append("roomNumber", selected.roomNo);
+    formData.append("bedNumber", selected.bedIndex + 1);
 
-        try {
-            const res = await fetch(API_BASE, { method: "POST", body: formData });
-            const data = await res.json();
-
-            if (res.status === 409) {
-                alert(`⚠️ This bed was just booked by someone else! Please pick another room.`);
-                setSelected(null);
-                fetchOccupied(); 
-                return;
-            }
-
-            if (!res.ok) throw new Error(data.error || "Submission failed");
-            
-            alert("Application submitted successfully!");
-            setExistingAllocation({ ...form, room_number: selected.roomNo, bed_number: selected.bedIndex + 1, status: "pending" });
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
     try {
-      const { data, ok } = await safeFetch(API_BASE, { method: "POST", body: formData });
-      if (!ok) throw new Error(data.error || "Submission failed");
+      const res = await fetch(API_BASE, { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
       
       alert("Application submitted successfully!");
       setExistingAllocation({ 
@@ -211,56 +176,20 @@ export default function StudentRoomAllocation() {
         bed_number: selected.bedIndex + 1, 
         status: "pending" 
       });
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch (err) { alert(err.message); }
+    finally { setIsSubmitting(false); }
   };
 
-    if (loadingStatus) return <div className="allocation-page">Loading...</div>;
-  // --- RENDERING LOGIC ---
+  // --- UI Rendering ---
 
   if (loadingStatus || loading) return <div className="allocation-page">Loading...</div>;
 
-    if (existingAllocation) {
-        return (
-            <div className="allocation-page">
-                <div className="allocation-card">
-                    <div className="allocation-header"><h2>Status: {existingAllocation.status?.toUpperCase()}</h2></div>
-                    <div className="status-body">
-                        <div className="allocation-details">
-                            <div className="detail-row"><span>Room</span><span>{existingAllocation.room_number}</span></div>
-                            <div className="detail-row"><span>Bed</span><span>{existingAllocation.bed_number}</span></div>
-                            <div className="detail-row"><span>Hostel</span><span>{existingAllocation.hostel}</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-  // Session Closed View
-  if (!isSessionOpen) {
-    return (
-      <div className="allocation-page">
-        <div className="allocation-card session-closed-card">
-          <h2>🚫 Allocation Session Closed</h2>
-          <p>The booking window for <strong>{form.hostel}</strong> is currently inactive.</p>
-          <p>Please refer to the admin schedule or contact support.</p>
-          <button className="refresh-btn" onClick={() => window.location.reload()}>Check Again</button>
-        </div>
-      </div>
-    );
-  }
-
-  // Already Allocated View
+  // Render Status if already allocated
   if (existingAllocation) {
     return (
       <div className="allocation-page">
         <div className="allocation-card">
-          <div className="allocation-header">
-            <h2>Status: {existingAllocation.status?.toUpperCase()}</h2>
-          </div>
+          <div className="allocation-header"><h2>Status: {existingAllocation.status?.toUpperCase()}</h2></div>
           <div className="status-body">
             <div className="allocation-details">
               <div className="detail-row"><span>Room</span><span>{existingAllocation.room_number}</span></div>
@@ -274,87 +203,81 @@ export default function StudentRoomAllocation() {
     );
   }
 
+  // 🔥 Render Eligibility Error if Fees not updated in profile
+  if (isEligible === false) {
     return (
-        <div className="allocation-page">
-            <div className="allocation-card">
-                <div className="allocation-header"><h2>Room Allocation</h2></div>
-                <form onSubmit={handleSubmit} className="allocation-form">
-                    <div className="form-grid">
-                        <div className="form-group"><label>Full Name</label><input value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} required /></div>
-                        <div className="form-group"><label>Reg No</label><input value={form.regNo} onChange={(e) => setForm({...form, regNo: e.target.value})} required /></div>
-                        <div className="form-group"><label>Dept</label><input value={form.department} onChange={(e) => setForm({...form, department: e.target.value})} required /></div>
-                    </div>
-                    <div className="form-grid">
-                        <div className="form-group"><label>Hostel</label>
-                            <HostelSelector value={form.hostel} onChange={(v) => { setForm({...form, hostel: v}); setSelected(null); }} />
-                        </div>
-                        <div className="form-group"><label>Floor</label>
-                            <FloorSelector value={form.floor} onChange={(v) => { setForm({...form, floor: v}); setSelected(null); }} />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="file-upload-label">Payment Receipt</label>
-                        <input type="file" onChange={(e) => setReceipt(e.target.files[0])} required />
-                    </div>
-                    <RoomGrid
-                        hostel={form.hostel} floor={form.floor} rooms={rooms} getBeds={getBedStatus}
-                        selected={selected} onSelectFreeBed={(roomNo, bedIndex) => setSelected({ roomNo, bedIndex })}
-                    />
-                    <button type="submit" className="submit-btn" disabled={isSubmitting}>
-                        {isSubmitting ? "Submitting..." : "Submit Allocation"}
-                    </button>
-                </form>
-            </div>
+      <div className="allocation-page">
+        <div className="allocation-card" style={{ textAlign: 'center', padding: '50px' }}>
+          <div style={{ fontSize: '3.5rem', marginBottom: '20px' }}>⚠️</div>
+          <h2 style={{ color: '#ef4444', marginBottom: '10px' }}>Fees Payment Status Required</h2>
+          <p style={{ color: '#6b7280', fontSize: '1.1rem', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 25px' }}>
+            To proceed with room allocation, please update your <b>Fee Payment Mode</b> in the Profile section. You will be able to access this form once your profile is complete.
+          </p>
+          <a href="/student/profile" className="submit-btn" style={{ textDecoration: 'none', display: 'inline-block', width: 'auto', padding: '12px 30px' }}>
+            Go to Profile
+          </a>
         </div>
+      </div>
     );
-  // Booking Form View
+  }
+
+  // Render Allocation Form
   return (
     <div className="allocation-page">
       <div className="allocation-card">
-        <div className="allocation-header"><h2>Room Allocation</h2></div>
-        <form onSubmit={handleSubmit} className="allocation-form">
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Full Name</label>
-              <input value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} required />
-            </div>
-            <div className="form-group">
-              <label>Reg No</label>
-              <input value={form.regNo} onChange={(e) => setForm({...form, regNo: e.target.value})} required />
-            </div>
-            <div className="form-group">
-              <label>Dept</label>
-              <input value={form.department} onChange={(e) => setForm({...form, department: e.target.value})} required />
-            </div>
+        <div className="allocation-header"><h2>Room Allocation Form</h2></div>
+        {!isSessionOpen ? (
+          <div className="session-closed" style={{ textAlign: 'center', padding: '40px', fontSize: '1.2rem', fontWeight: 'bold', color: '#ef4444' }}>
+            🚫 Session Closed or Configuration Missing
           </div>
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Hostel</label>
-              <HostelSelector value={form.hostel} onChange={(v) => { setForm({...form, hostel: v}); setSelected(null); }} />
+        ) : (
+          <form onSubmit={handleSubmit} className="allocation-form">
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Full Name</label>
+                <input placeholder="Enter Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+              </div>
+              <div className="form-group">
+                <label>Registration Number</label>
+                <input placeholder="Enter Reg No" value={form.regNo} onChange={e => setForm({...form, regNo: e.target.value})} required />
+              </div>
+              <div className="form-group">
+                <label>Department</label>
+                <input placeholder="Enter Dept" value={form.department} onChange={e => setForm({...form, department: e.target.value})} required />
+              </div>
             </div>
-            <div className="form-group">
-              <label>Floor</label>
-              <FloorSelector value={form.floor} onChange={(v) => { setForm({...form, floor: v}); setSelected(null); }} />
+
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Select Hostel</label>
+                <HostelSelector value={form.hostel} onChange={v => { setForm({...form, hostel: v}); setSelected(null); }} />
+              </div>
+              <div className="form-group">
+                <label>Select Floor</label>
+                <FloorSelector value={form.floor} onChange={v => { setForm({...form, floor: v}); setSelected(null); }} />
+              </div>
             </div>
-          </div>
-          <div className="form-group">
-            <label className="file-upload-label">Payment Receipt</label>
-            <input type="file" onChange={(e) => setReceipt(e.target.files[0])} required />
-          </div>
-          
-          <RoomGrid
-            hostel={form.hostel} 
-            floor={form.floor} 
-            rooms={rooms} 
-            getBeds={getBedStatus}
-            selected={selected} 
-            onSelectFreeBed={(roomNo, bedIndex) => setSelected({ roomNo, bedIndex })}
-          />
-          
-          <button type="submit" className="submit-btn" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Allocation"}
-          </button>
-        </form>
+
+            <div className="form-group">
+                <label>Upload Payment Receipt (JPG/PNG)</label>
+                <input type="file" onChange={e => setReceipt(e.target.files[0])} required />
+            </div>
+            
+            <div className="room-selection-area">
+                <label>Select Your Bed</label>
+                <RoomGrid 
+                 rooms={rooms} 
+                 getBeds={getBedStatus} 
+                 selected={selected} 
+                 onSelectFreeBed={(roomNo, bedIndex) => setSelected({ roomNo, bedIndex })} 
+                />
+            </div>
+
+            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit Allocation"}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

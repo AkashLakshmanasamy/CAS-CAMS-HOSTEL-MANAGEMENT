@@ -1,45 +1,58 @@
+/* RoomSeat.css */
 .room-seat {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 6px;
+  border: 2px solid #ddd; /* Normal border */
+  border-radius: 10px;
+  padding: 10px;
   text-align: center;
-  margin: 5px;
+  transition: all 0.2s ease-in-out;
+  background-color: #fff;
 }
 
-.room-seat.empty {
-  background: #d4f8d4;
-}
+/* Background colors based on status */
+.room-seat.empty { background-color: #e8f5e9; border-color: #c8e6c9; }
+.room-seat.partial { background-color: #fffde7; border-color: #fff9c4; }
+.room-seat.full { background-color: #ffebee; border-color: #ffcdd2; }
 
-.room-seat.partial {
-  background: #fff3cd;
-}
-
-.room-seat.full {
-  background: #f8d7da;
+/* Inga thaan change - Selection highlights */
+.room-seat:has(.bed.selected) {
+  border: 3px solid #0015ff; /* Dark Navy Blue for clarity */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
 }
 
 .room-number {
-  font-weight: bold;
-  margin-bottom: 4px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #333;
 }
 
 .beds {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 8px;
 }
 
 .bed {
-  width: 20px;
-  height: 20px;
-  border: 1px solid #555;
-  border-radius: 3px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #757575;
+  border-radius: 4px;
   cursor: pointer;
+  background: #fff;
+  transition: transform 0.1s;
 }
 
 .bed.filled {
-  background: #007bff;
+  background: #757575; /* Grayed out since it's already occupied */
+  cursor: not-allowed;
+  border-color: #424242;
 }
+
+/* Selected Bed specific style */
 .bed.selected {
-  outline: 2px solid #1e90ff;
-  box-shadow: 0 0 0 2px rgba(30,144,255,0.2);
+  background: #2e7d32; /* Deep Green for selection */
+  border-color: #1b5e20;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  transform: scale(1.1);
 }

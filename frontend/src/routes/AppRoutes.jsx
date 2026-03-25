@@ -29,21 +29,30 @@ import LeaveManagement from "../pages/admin/LeaveManagement";
 import FeedbackManagement from "../pages/admin/FeedbackManagement";
 import StudentRecords from "../pages/admin/StudentRecords";
 
-// 🚀 ADDED: Import the new Hostel Setup component
+// Hostel Setup component
 import AdminHostelSetup from "../pages/admin/AdminHostelSetup"; 
 
-/* 🔹 Redirect user based on role */
+/* 🔹 UPDATED: Redirect user based on role with PERSISTENCE check */
 function HomeRedirect() {
-  const { role, loading } = useAuth();
-  if (loading) return <div className="loading-screen">Loading...</div>;
-  if (role === "student") return <Navigate to="/student" />;
-  if (role === "admin") return <Navigate to="/admin" />;
+  const { role, loading, isAuthenticated } = useAuth();
+
+  // Reload pannum pothu storage-la irundhu data recover aaguara varai Loading screen kaatum
+  if (loading) return <div className="loading-screen">Verifying Session...</div>;
+
+  // Session irundha role-based dashboard-ku anuppum
+  if (isAuthenticated) {
+    if (role === "admin") return <Navigate to="/admin" />;
+    return <Navigate to="/student" />;
+  }
+
+  // Session illai na mattum Login-ku pogum
   return <Navigate to="/login" />;
 }
 
-/* 🔹 Protect role-based routes */
+/* 🔹 Protect role-based routes (EXISTING LOGIC) */
 function ProtectedRoute({ role, children }) {
   const { isAuthenticated, role: userRole, loading } = useAuth();
+  
   if (loading) return <div className="loading-screen">Loading...</div>;
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (role && role !== userRole) return <Navigate to="/login" />;
@@ -75,7 +84,7 @@ export default function AppRoutes() {
         
         <Route index element={<RoomRequests />} /> 
 
-        {/* Sub-routes: Renders INSIDE the Outlet of AdminDashboard */}
+        {/* Sub-routes */}
         <Route path="/admin/students" element={<StudentRecords />} />
         <Route path="/admin/feedback" element={<FeedbackManagement />} />
         <Route path="/admin/leave" element={<LeaveManagement />} />
@@ -83,8 +92,6 @@ export default function AppRoutes() {
         <Route path="/admin/announcements" element={<AdminAnnouncements />} />
         <Route path="/admin/update-menu" element={<AdminMenuUpdate />} />
         <Route path="/admin/update-rules" element={<AdminRulesUpdate />} />
-        
-        {/* 🚀 ADDED: New Route for Hostel Generation and Session Setup */}
         <Route path="/admin/setup" element={<AdminHostelSetup />} />
         
       </Route>

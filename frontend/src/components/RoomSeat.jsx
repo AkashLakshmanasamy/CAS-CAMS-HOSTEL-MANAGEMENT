@@ -1,3 +1,4 @@
+// RoomSeat.jsx
 import React from "react";
 import "../styles/RoomSeat.css";
 
@@ -7,16 +8,15 @@ export default function RoomSeat({ roomNumber, beds, onSelectFreeBed, selected }
 
   return (
     <div className={`room-seat ${status}`}>
-      <div className="room-number">{roomNumber}</div>
+      <div className="room-number">Room {roomNumber}</div>
       <div className="beds">
-        {[0,1,2].map((i) => {
-          const isOcc = !!beds[i];
+        {beds.map((isOcc, i) => {
           const isSel = selected?.roomNo === roomNumber && selected?.bedIndex === i;
           return (
             <div
               key={i}
               className={`bed ${isOcc ? "filled" : ""} ${isSel ? "selected" : ""}`}
-              title={isOcc ? "Occupied" : "Click to select"}
+              title={isOcc ? "Occupied" : "Available"}
               onClick={() => !isOcc && onSelectFreeBed(roomNumber, i)}
             />
           );

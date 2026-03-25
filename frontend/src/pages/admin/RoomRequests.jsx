@@ -23,7 +23,6 @@ export default function RoomRequests({ onActionComplete }) {
 
   const fetchRequests = async () => {
     setLoading(true);
-
     let query = supabase
       .from("allocations")
       .select("*")
@@ -34,7 +33,6 @@ export default function RoomRequests({ onActionComplete }) {
     }
 
     const { data, error } = await query;
-
     if (!error) setRequests(data || []);
     setLoading(false);
   };
@@ -65,7 +63,6 @@ export default function RoomRequests({ onActionComplete }) {
 
       fetchRequests();
       if (onActionComplete) onActionComplete();
-
     } catch (err) {
       console.error("Error updating status:", err);
       alert("Failed to update status");
@@ -74,7 +71,6 @@ export default function RoomRequests({ onActionComplete }) {
 
   return (
     <div className="admin-page">
-      {/* --- Header --- */}
       <div className="page-header">
         <div>
           <h2>Room Allocation Requests</h2>
@@ -85,7 +81,6 @@ export default function RoomRequests({ onActionComplete }) {
         </button>
       </div>
 
-      {/* --- Filter Bar --- */}
       <div className="filter-bar">
         {['all', 'pending', 'confirmed', 'rejected'].map(f => (
           <button 
@@ -98,7 +93,6 @@ export default function RoomRequests({ onActionComplete }) {
         ))}
       </div>
 
-      {/* --- Table --- */}
       <div className="table-container">
         <table className="styled-table">
           <thead>
@@ -127,23 +121,21 @@ export default function RoomRequests({ onActionComplete }) {
                   <td>{r.hostel}</td>
                   <td>
                     <div className="room-info-pill">
-                      <span className="pill-label">Room</span> {r.room_number} &bull; <span className="pill-label">Bed</span> {r.bed_number}
+                      <span className="pill-label">R</span> {r.room_number} &bull; <span className="pill-label">B</span> {r.bed_number}
                     </div>
                   </td>
                   
-                  {/* Document Column */}
-                  <td>
-                    {r.receipt_url ? (
-                      <a
-                        href={r.receipt_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="doc-link"
-                      >
-                        <Icon path={ICONS.document} className="icon-sm" /> View Receipt
+                  {/* Payment Column - Optimized UI */}
+                  <td className="payment-cell">
+                    {r.receipt_url && r.receipt_url.startsWith('http') ? (
+                      <a href={r.receipt_url} target="_blank" rel="noreferrer" className="receipt-link-btn">
+                        <Icon path={ICONS.document} className="icon-sm" />
+                        <span>View</span>
                       </a>
                     ) : (
-                      <span className="text-muted text-sm">No File</span>
+                      <div className={`status-placeholder ${r.receipt_url === "pending_upload" ? "processing" : "empty"}`}>
+                        <span>{r.receipt_url === "pending_upload" ? "Processing" : "No File"}</span>
+                      </div>
                     )}
                   </td>
 
@@ -156,18 +148,10 @@ export default function RoomRequests({ onActionComplete }) {
                   <td>
                     {r.status === "pending" ? (
                       <div className="action-row">
-                        <button
-                          className="action-btn resolve"
-                          onClick={() => updateStatus(r.id, "confirmed", r.reg_no)}
-                          title="Confirm Allocation"
-                        >
+                        <button className="action-btn resolve" onClick={() => updateStatus(r.id, "confirmed", r.reg_no)}>
                           <Icon path={ICONS.check} />
                         </button>
-                        <button
-                          className="action-btn delete"
-                          onClick={() => updateStatus(r.id, "rejected", r.reg_no)}
-                          title="Reject Allocation"
-                        >
+                        <button className="action-btn delete" onClick={() => updateStatus(r.id, "rejected", r.reg_no)}>
                           <Icon path={ICONS.close} />
                         </button>
                       </div>

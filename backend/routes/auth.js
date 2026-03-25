@@ -11,16 +11,32 @@ router.post("/signup", async (req, res) => {
   }
 
   // 1️⃣ Create user in Supabase Auth
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error: authError } = await supabase.auth.signUp({
     email,
     password,
   });
 
-  if (error) {
-    return res.status(400).json({ error: error.message });
+  if (authError) {
+    return res.status(400).json({ error: authError.message });
   }
 
-  // Return user with role so frontend can navigate
+  // 2️⃣ IMPORTANT: Profile table-la role-ah insert pannanum
+  // Neenga thirumba login pannum pothu role 'student'-nu default-ah pogama irukka idhu dhaan mukkiyam.
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .insert([
+      { 
+        id: data.user.id, 
+        role: role 
+      }
+    ]);
+
+  if (profileError) {
+    // Auth create aagi profile fail aana, andha error-ai handle seivom
+    return res.status(400).json({ error: "Auth success, but profile creation failed: " + profileError.message });
+  }
+
+  // Success response
   res.json({ 
     user: { 
       id: data.user.id, 
@@ -38,6 +54,7 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ error: "Email and password required" });
   }
 
+  // Supabase Auth logic
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -47,12 +64,14 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ error: error?.message || "Login failed" });
   }
 
+  // Profiles table-la irundhu role-ai edukkirom
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", data.user.id)
     .single();
 
+  // Profile-la role illai endral mattum default-ah 'student'
   const userRole = profile?.role || "student";
 
   res.json({

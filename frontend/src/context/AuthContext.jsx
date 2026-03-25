@@ -5,16 +5,24 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(false);
+  
+  // 1. MUST: Initial loading-ai TRUE-nu vaikkanum
+  const [loading, setLoading] = useState(true); 
 
-  // Check for existing session on refresh
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
-      const parsed = JSON.parse(savedUser);
-      setUser(parsed);
-      setRole(parsed.role);
+      try {
+        const parsed = JSON.parse(savedUser);
+        setUser(parsed);
+        setRole(parsed.role);
+      } catch (error) {
+        console.error("Auth recovery error:", error);
+        localStorage.removeItem("user");
+      }
     }
+    // 2. Data recover panni mudithu user state set aanapiragu loading-ai false seiyavum
+    setLoading(false); 
   }, []);
 
   const login = (userData) => {
@@ -37,11 +45,16 @@ export function AuthProvider({ children }) {
         login, 
         logout, 
         loading, 
-        setLoading, // Added this so Signup.jsx can use it
+        setLoading, 
         isAuthenticated: !!user 
       }}
     >
-      {children}
+      {/* 3. Loading-aga irukkumbothu context-ai render seiya koodathu */}
+      {!loading ? children : (
+        <div className="loading-screen" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+           <h2>Loading System...</h2>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 }

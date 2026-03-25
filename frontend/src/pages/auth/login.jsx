@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import "../../styles/Auth.css";
 
 export default function Login() {
-  // IMPORTANT: Use 'login' helper. Do NOT try to destructure setUser.
+  // Global state update seiya 'login' helper use panrom
   const { login, setLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,16 +29,20 @@ export default function Login() {
       const result = await response.json();
 
       if (response.ok) {
-        // This updates your global state and localStorage
+        // Global AuthContext matrum localStorage-ai update seiyum
         login(result.user);
 
         setLoading(false);
         setLocalLoading(false);
 
-        // Role-based redirection
+        // --- Role-based Redirection Logic ---
+        // result.user.role ippo backend-il irundhu (profiles table) varum
         if (result.user.role === "admin") {
           navigate("/admin", { replace: true });
+        } else if (result.user.role === "faculty") {
+          navigate("/faculty", { replace: true });
         } else {
+          // Default-ah student dashboard-ku kootitu pogum
           navigate("/student", { replace: true });
         }
       } else {
@@ -59,18 +63,35 @@ export default function Login() {
       <div className="auth-card">
         <h2>Welcome Back</h2>
         <p className="auth-subtitle">Login to access your dashboard</p>
+        
         {error && <div className="auth-error">{error}</div>}
+        
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <input type="email" className="auth-input" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input 
+              type="email" 
+              className="auth-input" 
+              placeholder="Email Address" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
           </div>
           <div className="form-group">
-            <input type="password" className="auth-input" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input 
+              type="password" 
+              className="auth-input" 
+              placeholder="Password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
           </div>
           <button type="submit" disabled={localLoading} className="auth-btn btn-primary">
             {localLoading ? "Logging in..." : "Login"}
           </button>
         </form>
+        
         <div className="auth-footer">
           Don't have an account? <Link to="/signup" className="auth-link">Sign up</Link>
         </div>

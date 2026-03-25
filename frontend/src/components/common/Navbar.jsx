@@ -27,9 +27,10 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         
+        {/* ✅ Brand Name Updated to CubeAI Hostels */}
         <div className="navbar-brand" onClick={() => navigate("/student")}>
           <div className="brand-text">
-            <h1>Kongu Hostels</h1>
+            <h1>CubeAI Hostels</h1>
             <span>Student Portal</span>
           </div>
         </div>
@@ -42,27 +43,21 @@ export default function Navbar() {
 
         <div className={`navbar-menu ${isMenuOpen ? "active" : ""}`}>
           <ul className="nav-links">
-            
-            {/* ✅ 1. Dashboard (Home) */}
+            {/* ✅ Dashboard (Home) */}
             <li><NavLink to="/student" end onClick={closeMenu}>Dashboard</NavLink></li>
-
-            {/* ✅ 2. Profile */}
+            {/* ✅ Profile */}
             <li><NavLink to="/StudentProfile" onClick={closeMenu}>Profile</NavLink></li>
-
-            {/* ✅ 3. Room Allocation (Separate Page) */}
+            {/* ✅ Room Allocation */}
             <li><NavLink to="/room-allocation" onClick={closeMenu}>Rooms</NavLink></li>
-
-            {/* ✅ 4. Leave */}
+            {/* ✅ Leave */}
             <li><NavLink to="/LeaveAppliction" onClick={closeMenu}>Leave</NavLink></li>
-
-            {/* ✅ 5. Feedback */}
+            {/* ✅ Feedback */}
             <li><NavLink to="/Feedback" onClick={closeMenu}>Feedback</NavLink></li>
-
+            {/* ✅ Food */}
             <li><NavLink to="/Schedule" onClick={closeMenu}>Food</NavLink></li>
-
+            {/* ✅ Rules */}
             <li><NavLink to="/Rules" onClick={closeMenu}>Rules </NavLink></li>
           </ul>
-
           <div className="nav-user-actions">
             <span className="user-email">{user?.email}</span>
             <button onClick={handleLogout} className="logout-btn">

@@ -1,34 +1,50 @@
+/* Container Layout Update */
 .admin-setup-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* Side-by-side mathi stack panna */
+  justify-content: flex-start;
   align-items: center;
-  min-height: 80vh;
-  padding: 20px;
+  min-height: 100vh;
+  padding: 40px 20px;
   background-color: #f8fafc;
+  gap: 30px; /* Card-kukum Table-kukum idaiyil space */
 }
 
+/* Card Styling - Standard Width */
 .admin-setup-card {
   background: white;
   padding: 2.5rem;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   width: 100%;
-  max-width: 450px;
+  max-width: 800px; /* Table nalla viriya idhu mukkiyam */
 }
 
-.admin-setup-card h2 {
-  margin-bottom: 0.5rem;
+.setup-header {
+  margin-bottom: 1.5rem;
+}
+
+.setup-header h2 {
+  margin: 0;
   color: #1e293b;
+  font-size: 1.5rem;
 }
 
-.subtitle {
+.setup-header p {
   color: #64748b;
   font-size: 0.9rem;
-  margin-bottom: 2rem;
+  margin-top: 5px;
+}
+
+/* Form Grid for start/end time */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   display: flex;
   flex-direction: column;
 }
@@ -37,14 +53,72 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: #334155;
+  font-size: 0.9rem;
 }
 
-.form-group input, .form-group select {
+.setup-input {
   padding: 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 1rem;
+  width: 100%;
 }
+
+/* Table Styling */
+.session-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: #fff;
+}
+
+.session-table th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.session-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+/* Status Badges */
+.badge-open {
+  background-color: #dcfce7;
+  color: #15803d;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-closed {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.edit-mini-btn, .delete-mini-btn {
+  padding: 6px 15px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 5px;
+  font-size: 0.85rem;
+}
+
+.edit-mini-btn { background: #eff6ff; color: #2563eb; }
+.delete-mini-btn { background: #fef2f2; color: #ef4444; }
 
 .activate-btn {
   width: 100%;
@@ -52,16 +126,8 @@
   background-color: #2563eb;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 700;
+  margin-top: 10px;
   cursor: pointer;
-  transition: background 0.2s;
-}
-
-.activate-btn:hover {
-  background-color: #1d4ed8;
-}
-
-.activate-btn:disabled {
-  background-color: #94a3b8;
 }

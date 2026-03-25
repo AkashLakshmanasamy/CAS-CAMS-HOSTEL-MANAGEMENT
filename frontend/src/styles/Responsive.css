@@ -1,0 +1,44 @@
+/* Responsive.css */
+
+/* Tablet & Mobile (Below 768px) */
+@media screen and (max-width: 768px) {
+  
+  /* 1. Grid layouts-ah single column-ah mathurathuku */
+  .grid-2, .grid-3, .stats-grid, .dashboard-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+
+  /* 2. Admin & Student Cards width */
+  .content-card, .stat-card, .announcement-item {
+    width: 100% !important;
+    padding: 15px !important;
+  }
+
+  /* 3. Tables - Mobile-la overflow aagama scroll aaga */
+  .table-container, table {
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap;
+  }
+
+  /* 4. Form inputs focus matrum size */
+  .input-field, .input-area, .btn-primary {
+    width: 100% !important;
+    font-size: 16px !important; /* Mobile keyboard zoom thavirkka */
+  }
+
+  /* 5. Navigation/Sidebar adjustment (Optional) */
+  .admin-page, .student-page {
+    padding: 10px !important;
+    margin-top: 60px; /* Top nav iruntha */
+  }
+}
+
+/* Very Small Mobile (Below 480px) */
+@media screen and (max-width: 480px) {
+  h2 { font-size: 1.5rem !important; }
+  .page-header { text-align: center; }
+}
