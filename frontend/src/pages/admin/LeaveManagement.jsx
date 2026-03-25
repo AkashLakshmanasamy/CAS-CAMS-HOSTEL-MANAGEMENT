@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../utils/supabase"; 
 import "../../styles/LeaveManagement.css";
 
-const API_URL = "http://localhost:5000/api/leave";
+const API_URL = "https://cas-cams-hostel-management-1.onrender.com/api/leave";
 
 const Icon = ({ path, className = "icon" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>

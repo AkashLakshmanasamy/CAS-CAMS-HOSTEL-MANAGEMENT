@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../../styles/FeedbackManagement.css";
 
-const API_BASE_URL = "http://localhost:5000/api/feedback";
+const API_BASE_URL = "https://cas-cams-hostel-management-1.onrender.com/api/feedback";
 
 const Icon = ({ path, className = "" }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`icon ${className}`}>

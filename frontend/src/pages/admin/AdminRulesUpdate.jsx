@@ -15,7 +15,7 @@ export default function AdminRulesUpdate() {
 
   const fetchRules = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/rules");
+      const res = await fetch("https://cas-cams-hostel-management-1.onrender.com/api/rules");
       const data = await res.json();
       if (data) {
         setRules({
@@ -31,7 +31,7 @@ export default function AdminRulesUpdate() {
   const handleSave = async () => {
     setMessage("⏳ Saving changes...");
     try {
-      const res = await fetch("http://localhost:5000/api/rules", {
+      const res = await fetch("https://cas-cams-hostel-management-1.onrender.com/api/rules", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(rules)

@@ -6,7 +6,7 @@ export default function Rules() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/rules")
+    fetch("https://cas-cams-hostel-management-1.onrender.com/api/rules")
       .then(res => res.json())
       .then(res => {
         setData({

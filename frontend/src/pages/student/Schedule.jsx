@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/Schedule.css";
 
-const API_BASE = "http://localhost:5000/api/menu";
+const API_BASE = "https://cas-cams-hostel-management-1.onrender.com/api/menu";
 
 const MealIcon = ({ type }) => {
   const icons = { Morning: '☕', Breakfast: '🍳', Lunch: '🍱', Evening: '🍵', Dinner: '🍽️' };

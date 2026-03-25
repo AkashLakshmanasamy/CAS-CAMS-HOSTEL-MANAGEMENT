@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../../styles/AdminSetup.css"; 
 
 const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4", "Hostel 5", "Hostel 6", "Hostel 7"];
-const API_BASE = "http://localhost:5000/api/allocation";
+const API_BASE = "https://cas-cams-hostel-management-1.onrender.com/api/allocation";
 
 export default function AdminHostelSetup() {
   const [data, setData] = useState({ hostel: HOSTELS[0], rooms: 40, open: "", close: "" });

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import "../../styles/VacantRooms-new.css"; 
 
 // Backend API URLs
-const API_BASE_URL = "http://localhost:5000/api/room/allocations";
-const ADMIN_ALLOCATE_URL = "http://localhost:5000/api/allocation/admin-fill"; 
+const API_BASE_URL = "https://cas-cams-hostel-management-1.onrender.com/api/room/allocations";
+const ADMIN_ALLOCATE_URL = "https://cas-cams-hostel-management-1.onrender.com/api/allocation/admin-fill"; 
 
 export default function VacantRooms() {
     const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4", "Hostel 5", "Hostel 6", "Hostel 7"];

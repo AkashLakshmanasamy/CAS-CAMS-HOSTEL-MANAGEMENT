@@ -4,7 +4,7 @@ const multer = require('multer');
 const supabase = require('../utils/supabaseClient'); 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Matches: GET http://localhost:5000/api/student/profile/:userId
+// Matches: GET https://cas-cams-hostel-management-1.onrender.com/api/student/profile/:userId
 router.get('/profile/:userId', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -21,7 +21,7 @@ router.get('/profile/:userId', async (req, res) => {
   }
 });
 
-// Matches: POST http://localhost:5000/api/student/update
+// Matches: POST https://cas-cams-hostel-management-1.onrender.com/api/student/update
 router.post('/update', upload.fields([
   { name: 'passportPhoto', maxCount: 1 },
   { name: 'idCardPhoto', maxCount: 1 },

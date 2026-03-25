@@ -7,7 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 
 const HOSTELS = ["Hostel 1", "Hostel 2", "Hostel 3", "Hostel 4", "Hostel 5", "Hostel 6", "Hostel 7"];
 const FLOORS = ["Ground", "First", "Second", "Third"];
-const API_BASE = "http://localhost:5000/api/allocation";
+const API_BASE = "https://cas-cams-hostel-management-1.onrender.com/api/allocation";
 
 export default function StudentRoomAllocation() {
   const { user, loading } = useAuth();
@@ -99,7 +99,7 @@ export default function StudentRoomAllocation() {
         setLoadingStatus(true);
         try {
           const [profileRes, statusRes] = await Promise.all([
-            fetch(`http://localhost:5000/api/student/profile/${user.id}`),
+            fetch(`https://cas-cams-hostel-management-1.onrender.com/api/student/profile/${user.id}`),
             safeFetch(`${API_BASE}/status?email=${user.email}`)
           ]);
 
