@@ -5,17 +5,12 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1. Middleware - UPDATED CORS
+// 1. Middleware - MASTER CORS FIX (Allows everything to prevent URL mismatch)
 app.use(cors({
-    // Inga dhaan unga Vercel URL-ai allow pannanum
-    origin: [
-        "https://cubehostels-4bdhrudcl-lisanth-ks-projects.vercel.app", 
-        "https://cubehostels.vercel.app", 
-        "http://localhost:5173"
-    ], 
+    origin: "*", 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
 }));
 
 app.use(express.json());
@@ -27,7 +22,7 @@ const feedbackRoutes = require("./routes/feedback");
 const leaveRoutes = require("./routes/leave");
 const roomRoutes = require("./routes/room");
 const allocationRoutes = require('./routes/allocation');
-const rulesRoutes = require('./routes/rules');
+const rulesRoutes = require('./rules/rules'); // Path check: munnadi './rules/rules' nu irundhuchu
 const menuRoutes = require("./routes/menu"); 
 
 // 3. Mounting
@@ -49,4 +44,5 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: "Something went wrong on the server!" });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Fixed: Port 10000 la run aaga help pannum (Render dynamic port)
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
