@@ -5,12 +5,13 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1. Middleware - Updated CORS with your Vercel URL
+// 1. Middleware - UPDATED CORS
 app.use(cors({
+    // Inga dhaan unga Vercel URL-ai allow pannanum
     origin: [
-        "https://cubehostels-4bdhrudcl-lisanth-ks-projects.vercel.app", // Your Vercel Link
-        "https://cubehostels.vercel.app", // Your Main Vercel Domain (safer to add)
-        "http://localhost:5173" // For local testing
+        "https://cubehostels-4bdhrudcl-lisanth-ks-projects.vercel.app", 
+        "https://cubehostels.vercel.app", 
+        "http://localhost:5173"
     ], 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
     credentials: true,
