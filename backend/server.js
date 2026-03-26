@@ -5,9 +5,13 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1. Middleware
+// 1. Middleware - Updated CORS with your Vercel URL
 app.use(cors({
-    origin: "http://localhost:5173", 
+    origin: [
+        "https://cubehostels-4bdhrudcl-lisanth-ks-projects.vercel.app", // Your Vercel Link
+        "https://cubehostels.vercel.app", // Your Main Vercel Domain (safer to add)
+        "http://localhost:5173" // For local testing
+    ], 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -23,7 +27,7 @@ const leaveRoutes = require("./routes/leave");
 const roomRoutes = require("./routes/room");
 const allocationRoutes = require('./routes/allocation');
 const rulesRoutes = require('./routes/rules');
-const menuRoutes = require("./routes/menu"); // <--- ADD THIS
+const menuRoutes = require("./routes/menu"); 
 
 // 3. Mounting
 app.use('/api/student', studentRoutes); 
@@ -33,15 +37,15 @@ app.use("/api/leave", leaveRoutes);
 app.use("/api/room", roomRoutes);
 app.use("/api/allocation", allocationRoutes);
 app.use('/api/rules', rulesRoutes);
-app.use("/api/menu", menuRoutes); // <--- ADD THIS (Matches your frontend URL)
+app.use("/api/menu", menuRoutes); 
 
 // Default Route
 app.get("/", (req, res) => res.send("Backend Running"));
 
-// 4. Global Error Handler (This prevents the server from crashing silently)
+// 4. Global Error Handler
 app.use((err, req, res, next) => {
     console.error("Server Error:", err.stack);
     res.status(500).json({ error: "Something went wrong on the server!" });
 });
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
